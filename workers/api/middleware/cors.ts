@@ -1,5 +1,25 @@
 import { Context, Next } from 'hono';
 
+function isAllowedOrigin(origin: string | undefined, frontendUrl?: string): origin is string {
+  if (!origin) return false;
+
+  const staticAllowedOrigins = new Set([
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://orphanage-tracking-frontend.vercel.app',
+  ]);
+
+  if (frontendUrl) {
+    staticAllowedOrigins.add(frontendUrl);
+  }
+
+  if (staticAllowedOrigins.has(origin)) {
+    return true;
+  }
+
+  return /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+}
+
 /**
  * CORS middleware for frontend-backend communication.
  * Supports dynamic allowed origins from environment configuration.
@@ -9,15 +29,8 @@ export function corsMiddleware() {
   return async (c: Context, next: Next) => {
     const origin = c.req.header('Origin');
 
-    // Build allowed origins list from environment + defaults
     const env = c.env as Record<string, string | undefined>;
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      env.FRONTEND_URL,
-    ].filter((o): o is string => Boolean(o));
-
-    const isAllowed = origin ? allowedOrigins.includes(origin) : false;
+    const isAllowed = isAllowedOrigin(origin, env.FRONTEND_URL);
 
     // Handle preflight requests
     if (c.req.method === 'OPTIONS') {
@@ -27,7 +40,7 @@ export function corsMiddleware() {
         c.header('Vary', 'Origin');
       }
       c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-      c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
       c.header('Access-Control-Max-Age', '600');
       return c.text('', 204);
     }

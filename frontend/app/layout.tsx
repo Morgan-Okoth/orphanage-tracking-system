@@ -5,6 +5,8 @@ import QueryProvider from '../components/QueryProvider';
 import { AuthProvider } from '../lib/contexts/AuthContext';
 import ServiceWorkerRegistrar from '../components/ServiceWorkerRegistrar';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Financial Transparency System | Bethel Rays of Hope',
   description: 'Bethel Rays of Hope NGO - Financial Transparency and Accountability',

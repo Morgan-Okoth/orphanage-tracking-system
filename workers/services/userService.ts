@@ -10,6 +10,7 @@ export interface UpdateUserData {
   lastName?: string;
   phone?: string;
   email?: string;
+  role?: UserRole;
 }
 
 export interface ApproveUserData {
@@ -68,7 +69,7 @@ export class UserService {
     const sanitizedUsers = paginatedUsers.map(({ passwordHash, ...user }) => user);
 
     return {
-      users: sanitizedUsers,
+      items: sanitizedUsers,
       pagination: {
         page,
         limit,

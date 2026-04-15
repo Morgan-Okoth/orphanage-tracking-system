@@ -17,7 +17,7 @@ const app = new Hono<{ Bindings: Env; Variables: { user: JWTPayload } }>();
 
 // Apply auth middleware and restrict to ADMIN_LEVEL_2 only
 app.use('*', authMiddleware());
-app.use('*', requireRole(UserRole.ADMIN_LEVEL_2));
+app.use('*', requireRole(UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN));
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 50;

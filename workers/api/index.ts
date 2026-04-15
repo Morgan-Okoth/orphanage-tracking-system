@@ -22,12 +22,11 @@ export interface Env {
   AI: Ai;
   JWT_SECRET: string;
   ENCRYPTION_KEY: string;
-  MPESA_CONSUMER_KEY: string;
-  MPESA_CONSUMER_SECRET: string;
-  MPESA_SHORTCODE: string;
-  MPESA_PASSKEY: string;
-  MPESA_CALLBACK_URL: string;
-  SENDGRID_API_KEY: string;
+  INTASEND_SECRET_KEY: string;
+  INTASEND_CALLBACK_URL: string;
+  INTASEND_WEBHOOK_CHALLENGE?: string;
+  INTASEND_DEVICE_ID?: string;
+  RESEND_API_KEY: string;
   AT_API_KEY: string;
   AT_USERNAME: string;
   AT_SENDER_ID: string;

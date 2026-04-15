@@ -91,4 +91,4 @@ Yes, but only while the status is **Submitted**. Once an administrator starts re
 You will receive an email with the rejection reason. You may submit a new request with the required corrections.
 
 **How will I receive payment?**
-Payment is sent via M-Pesa to the phone number registered on your account.
+Payment is sent through IntaSend to the phone number registered on your account.

@@ -16,7 +16,7 @@ const app = new Hono<{ Bindings: Env; Variables: { user: JWTPayload } }>();
 
 // Apply auth middleware and restrict to admin roles
 app.use('*', authMiddleware());
-app.use('*', requireRole(UserRole.ADMIN_LEVEL_1, UserRole.ADMIN_LEVEL_2));
+app.use('*', requireRole(UserRole.ADMIN_LEVEL_1, UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN));
 
 const CACHE_KEY = 'dashboard:admin:stats';
 const CACHE_TTL = 300; // 5 minutes
@@ -158,7 +158,7 @@ interface AuditorDashboard {
  * Get auditor dashboard data
  * Restricted to ADMIN_LEVEL_2 only
  */
-app.get('/auditor-dashboard', requireRole(UserRole.ADMIN_LEVEL_2), async (c) => {
+app.get('/auditor-dashboard', requireRole(UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN), async (c) => {
   try {
     const db = getDb(c.env.DB);
 

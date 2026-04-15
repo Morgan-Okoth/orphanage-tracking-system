@@ -74,7 +74,7 @@ This document provides step-by-step instructions for testing database migrations
    ```bash
    wrangler d1 execute financial-transparency-db --local --command="SELECT COUNT(*) as count FROM users;"
    ```
-   Expected: 9 users (2 admins, 5 active students, 2 pending students)
+   Expected: 11 users (1 superadmin, 3 staff accounts, 5 active students, 2 pending students)
 
 3. Verify request count:
    ```bash

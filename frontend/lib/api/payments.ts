@@ -9,9 +9,10 @@ export interface InitiatePaymentRequest {
 
 export interface InitiatePaymentResponse {
   transactionId: string;
-  mpesaCheckoutRequestId: string;
+  intasendTrackingId: string;
   status: 'pending';
   amount: number;
+  message: string;
 }
 
 export interface PaymentRecord {
@@ -19,8 +20,8 @@ export interface PaymentRecord {
   requestId: string;
   amount: number;
   status: 'pending' | 'completed' | 'failed';
-  mpesaTransactionId?: string;
-  mpesaReceiptNumber?: string;
+  intasendTrackingId?: string;
+  providerReference?: string;
   initiatedAt: string;
   completedAt?: string;
   failureReason?: string;

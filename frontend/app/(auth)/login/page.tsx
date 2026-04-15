@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, Typography, Box } from '@mui/material';
 import LoginForm from '../../../components/auth/LoginForm';
+import { UserRole } from '../../../lib/types/user';
+import { getDashboardRoute } from '../../../lib/utils/roleRoutes';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,7 +19,7 @@ export default function LoginPage() {
         <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
           Financial Transparency System
         </Typography>
-        <LoginForm onSuccess={() => router.push('/')} />
+        <LoginForm onSuccess={(role) => router.push(getDashboardRoute(role as UserRole))} />
         <Box sx={{ mt: 2, textAlign: 'center' }}>
           <Typography variant="body2">
             Don&apos;t have an account?{' '}

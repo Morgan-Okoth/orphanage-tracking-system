@@ -39,10 +39,15 @@ function formatSize(bytes: number) {
 function DocumentRow({ doc }: { doc: Document }) {
   const handleDownload = async () => {
     try {
-      const res = await documentsApi.getDownloadUrl(doc.id);
-      if (res.data?.url) {
-        window.open(res.data.url, '_blank', 'noopener,noreferrer');
-      }
+      const blob = await documentsApi.download(doc.id);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = doc.fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
     } catch {
       // silently fail — user can retry
     }

@@ -40,7 +40,7 @@ router.get(
 router.get(
   '/api/v1/users/pending',
   authMiddleware(),
-  requireRole(UserRole.ADMIN_LEVEL_1),
+  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.SUPERADMIN),
   userHandlers.listPendingUsers
 );
 
@@ -113,7 +113,7 @@ router.get(
 router.delete(
   '/api/v1/documents/:id',
   authMiddleware(),
-  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.ADMIN_LEVEL_2),
+  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN),
   documentHandlers.deleteDocument
 );
 
@@ -135,7 +135,7 @@ router.get(
 router.get(
   '/api/v1/requests/archived',
   authMiddleware(),
-  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.ADMIN_LEVEL_2),
+  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN),
   archivalHandlers.listArchivedRequests
 );
 
@@ -175,28 +175,28 @@ router.get(
 router.post(
   '/api/v1/requests/:id/review',
   authMiddleware(),
-  requireRole(UserRole.ADMIN_LEVEL_1),
+  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.SUPERADMIN),
   requestHandlers.startReview
 );
 
 router.post(
   '/api/v1/requests/:id/approve',
   authMiddleware(),
-  requireRole(UserRole.ADMIN_LEVEL_1),
+  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.SUPERADMIN),
   requestHandlers.approveRequest
 );
 
 router.post(
   '/api/v1/requests/:id/reject',
   authMiddleware(),
-  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.ADMIN_LEVEL_2),
+  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN),
   requestHandlers.rejectRequest
 );
 
 router.post(
   '/api/v1/requests/:id/request-docs',
   authMiddleware(),
-  requireRole(UserRole.ADMIN_LEVEL_1),
+  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.SUPERADMIN),
   requestHandlers.requestAdditionalDocuments
 );
 
@@ -204,14 +204,14 @@ router.post(
 router.post(
   '/api/v1/requests/:id/verify',
   authMiddleware(),
-  requireRole(UserRole.ADMIN_LEVEL_2),
+  requireRole(UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN),
   requestHandlers.verifyRequest
 );
 
 router.post(
   '/api/v1/requests/:id/flag',
   authMiddleware(),
-  requireRole(UserRole.ADMIN_LEVEL_2),
+  requireRole(UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN),
   requestHandlers.flagRequest
 );
 
@@ -232,7 +232,7 @@ router.get(
 router.post(
   '/api/v1/payments/initiate',
   authMiddleware(),
-  requireRole(UserRole.ADMIN_LEVEL_1),
+  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.SUPERADMIN),
   paymentHandlers.initiatePayment
 );
 
@@ -256,7 +256,7 @@ router.get(
 router.get(
   '/api/v1/payments',
   authMiddleware(),
-  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.ADMIN_LEVEL_2),
+  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN),
   paymentHandlers.listPayments
 );
 

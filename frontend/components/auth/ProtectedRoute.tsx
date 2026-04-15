@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../lib/contexts/AuthContext';
 import { UserRole } from '../../lib/types/user';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { getDashboardRoute } from '../../lib/utils/roleRoutes';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -22,7 +23,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
       return;
     }
     if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-      router.replace('/');
+      router.replace(getDashboardRoute(user.role));
     }
   }, [isAuthenticated, isLoading, user, allowedRoles, router]);
 

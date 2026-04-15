@@ -17,7 +17,7 @@ export async function listUsers(c: Context): Promise<Response> {
 
     // Get query parameters
     const role = c.req.query('role') as UserRole | undefined;
-    const accountStatus = c.req.query('accountStatus') as AccountStatus | undefined;
+    const accountStatus = (c.req.query('accountStatus') || c.req.query('status')) as AccountStatus | undefined;
     const page = parseInt(c.req.query('page') || '1');
     const limit = parseInt(c.req.query('limit') || '50');
 
@@ -64,7 +64,7 @@ export async function listPendingUsers(c: Context): Promise<Response> {
     return c.json<ApiResponse>(
       {
         success: true,
-        data: { users: pendingUsers },
+        data: pendingUsers,
       },
       200
     );
@@ -172,6 +172,22 @@ export async function updateUser(c: Context): Promise<Response> {
           error: {
             code: 'FORBIDDEN',
             message: 'You can only update your own profile',
+          },
+        },
+        403
+      );
+    }
+
+    if (
+      validatedData.role !== undefined &&
+      currentUser.role !== UserRole.SUPERADMIN
+    ) {
+      return c.json<ApiResponse>(
+        {
+          success: false,
+          error: {
+            code: 'FORBIDDEN',
+            message: 'Only superadmin can change user roles',
           },
         },
         403

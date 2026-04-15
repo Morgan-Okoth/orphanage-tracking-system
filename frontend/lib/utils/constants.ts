@@ -1,4 +1,13 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8787/api/v1';
+const isBrowser = typeof window !== 'undefined';
+const isLocalHost =
+  isBrowser &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (isLocalHost
+    ? 'http://localhost:8787/api/v1'
+    : 'https://financial-transparency-api.morgan-ent.workers.dev/api/v1');
 
 export const REQUEST_TYPE_LABELS = {
   SCHOOL_FEES: 'School Fees',

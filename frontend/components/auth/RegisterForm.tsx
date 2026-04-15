@@ -9,12 +9,20 @@ import {
   Box,
   Alert,
   CircularProgress,
-  MenuItem,
 } from '@mui/material';
 import { useState } from 'react';
 import { authApi } from '../../lib/api/auth';
-import { UserRole } from '../../lib/types/user';
 import { ApiError } from '../../lib/api/client';
+
+function normalizeKenyanPhone(phone: string): string {
+  const trimmed = phone.replace(/\s+/g, '');
+  if (trimmed.startsWith('+254')) return trimmed;
+  if (trimmed.startsWith('254')) return `+${trimmed}`;
+  if (trimmed.startsWith('0') && trimmed.length === 10) {
+    return `+254${trimmed.slice(1)}`;
+  }
+  return trimmed;
+}
 
 const schema = z
   .object({
@@ -22,7 +30,6 @@ const schema = z
     lastName: z.string().min(1, 'Last name is required'),
     email: z.string().email('Invalid email address'),
     phone: z.string().min(7, 'Phone number is required'),
-    role: z.nativeEnum(UserRole),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
   })
@@ -32,12 +39,6 @@ const schema = z
   });
 
 type FormValues = z.infer<typeof schema>;
-
-const ROLE_OPTIONS = [
-  { value: UserRole.STUDENT, label: 'Student / Beneficiary' },
-  { value: UserRole.ADMIN_LEVEL_1, label: 'Admin Level 1 (Operations)' },
-  { value: UserRole.ADMIN_LEVEL_2, label: 'Admin Level 2 (Auditor)' },
-];
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -53,14 +54,16 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { role: UserRole.STUDENT },
   });
 
   const onSubmit = async (values: FormValues) => {
     setError(null);
     try {
       const { confirmPassword: _, ...payload } = values;
-      await authApi.register(payload);
+      await authApi.register({
+        ...payload,
+        phone: normalizeKenyanPhone(payload.phone),
+      });
       setSuccess(true);
       onSuccess?.();
     } catch (err) {
@@ -119,22 +122,6 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         helperText={errors.phone?.message}
       />
       <TextField
-        select
-        label="Role"
-        fullWidth
-        margin="normal"
-        defaultValue={UserRole.STUDENT}
-        inputProps={register('role')}
-        error={!!errors.role}
-        helperText={errors.role?.message}
-      >
-        {ROLE_OPTIONS.map((opt) => (
-          <MenuItem key={opt.value} value={opt.value}>
-            {opt.label}
-          </MenuItem>
-        ))}
-      </TextField>
-      <TextField
         label="Password"
         type="password"
         fullWidth
@@ -160,8 +147,11 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         disabled={isSubmitting}
         sx={{ mt: 3 }}
       >
-        {isSubmitting ? <CircularProgress size={24} /> : 'Create Account'}
+      {isSubmitting ? <CircularProgress size={24} /> : 'Create Account'}
       </Button>
+      <Alert severity="info" sx={{ mt: 2 }}>
+        Public registration is for beneficiaries. Staff and auditor accounts are created internally.
+      </Alert>
     </Box>
   );
 }

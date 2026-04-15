@@ -59,15 +59,14 @@ cd workers
 wrangler secret put JWT_SECRET --env production
 wrangler secret put ENCRYPTION_KEY --env production   # 64-char hex: openssl rand -hex 32
 
-# M-Pesa
-wrangler secret put MPESA_CONSUMER_KEY --env production
-wrangler secret put MPESA_CONSUMER_SECRET --env production
-wrangler secret put MPESA_SHORTCODE --env production
-wrangler secret put MPESA_PASSKEY --env production
-wrangler secret put MPESA_CALLBACK_URL --env production
+# IntaSend
+wrangler secret put INTASEND_SECRET_KEY --env production
+wrangler secret put INTASEND_CALLBACK_URL --env production
+wrangler secret put INTASEND_WEBHOOK_CHALLENGE --env production   # optional
+wrangler secret put INTASEND_DEVICE_ID --env production           # optional
 
-# Email (SendGrid)
-wrangler secret put SENDGRID_API_KEY --env production
+# Email (Resend)
+wrangler secret put RESEND_API_KEY --env production
 
 # SMS (Africa's Talking)
 wrangler secret put AT_API_KEY --env production

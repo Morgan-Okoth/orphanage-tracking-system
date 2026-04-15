@@ -72,7 +72,7 @@ function VerificationQueueContent() {
 
 export default function VerificationQueuePage() {
   return (
-    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_2]}>
+    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN]}>
       <VerificationQueueContent />
     </ProtectedRoute>
   );

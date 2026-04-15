@@ -7,7 +7,7 @@ import { UserRole } from '../../../../lib/types/user';
 
 export default function UsersPage() {
   return (
-    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_1]}>
+    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_1, UserRole.SUPERADMIN]}>
       <Box>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
           <Typography variant="h5" fontWeight={700}>

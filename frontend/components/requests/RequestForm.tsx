@@ -20,7 +20,6 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { requestsApi } from '../../lib/api/requests';
-import { documentsApi } from '../../lib/api/documents';
 import { RequestType } from '../../lib/types/request';
 import DocumentUpload from '../documents/DocumentUpload';
 
@@ -57,16 +56,17 @@ export default function RequestForm() {
 
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
-      const res = await requestsApi.create(values);
-      if (!res.success || !res.data) throw new Error(res.error?.message ?? 'Failed to create request');
-      const requestId = res.data.id;
-      if (files.length > 0) {
-        setUploadError(null);
-        for (const { file } of files) {
-          await documentsApi.upload(requestId, file);
-        }
+      if (files.length === 0) {
+        throw new Error('At least one supporting document is required.');
       }
-      return requestId;
+
+      const res = await requestsApi.create(
+        values,
+        files.map(({ file }) => file),
+      );
+
+      if (!res.success || !res.data) throw new Error(res.error?.message ?? 'Failed to create request');
+      return res.data.id;
     },
     onSuccess: (id) => {
       queryClient.invalidateQueries({ queryKey: ['requests'] });
@@ -123,7 +123,10 @@ export default function RequestForm() {
 
         <Box>
           <Typography variant="subtitle2" gutterBottom>
-            Supporting Documents (optional)
+            Supporting Documents
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            At least one document is required to submit a request.
           </Typography>
           <DocumentUpload
             files={files}

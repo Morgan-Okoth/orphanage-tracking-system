@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend
 
-## Getting Started
+Next.js App Router frontend for the Financial Transparency and Accountability System.
 
-First, run the development server:
+## Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Material UI
+- TanStack Query
+- React Hook Form + Zod
+- Vitest + Testing Library
+
+## Local Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app runs on `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Set `NEXT_PUBLIC_API_URL` in `.env.local` if the API is not running at the default local worker URL:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8787/api/v1
+NEXT_PUBLIC_DONATION_URL=
+```
 
-## Learn More
+`NEXT_PUBLIC_DONATION_URL` is optional. When set, `/donate` sends well-wishers directly to your live hosted donation flow. When unset, the page falls back to a contact CTA.
 
-To learn more about Next.js, take a look at the following resources:
+## Main Routes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `/` public landing page
+- `/donate` donor and well-wisher page
+- `/login` sign-in flow
+- `/register` beneficiary self-service registration
+- `/student` beneficiary dashboard
+- `/admin` admin level 1 dashboard
+- `/auditor` admin level 2 dashboard
+- `/superadmin` governance dashboard
+- `/public-transparency` public-facing transparency dashboard
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Auth uses bearer tokens stored in `localStorage`.
+- In local development, the app defaults to `http://localhost:8787/api/v1` only when opened from `localhost`. Non-local deployments fall back to the live Workers API.
+- Request submission uses multipart form data because the worker requires request details and supporting documents in the same submission.
+- Public registration is beneficiary-only. Internal staff and auditor roles are provisioned by governance, not self-selected on the public form.
+- Dashboard and request screens assume the Cloudflare Workers API contract defined in `../workers/api/router.ts`.

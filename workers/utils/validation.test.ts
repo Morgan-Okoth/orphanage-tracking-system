@@ -146,7 +146,6 @@ describe('registerSchema', () => {
     password: 'SecurePass1',
     firstName: 'Jane',
     lastName: 'Doe',
-    role: UserRole.STUDENT,
   };
 
   it('accepts valid registration data', () => {
@@ -172,11 +171,6 @@ describe('registerSchema', () => {
   it('rejects missing firstName', () => {
     const { firstName: _, ...rest } = validPayload;
     const result = registerSchema.safeParse(rest);
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects invalid role', () => {
-    const result = registerSchema.safeParse({ ...validPayload, role: 'SUPERUSER' });
     expect(result.success).toBe(false);
   });
 
@@ -259,7 +253,7 @@ describe('initiatePaymentSchema', () => {
   });
 
   it('rejects invalid phone number format', () => {
-    const result = initiatePaymentSchema.safeParse({ ...validPayload, phoneNumber: '0712345678' });
+    const result = initiatePaymentSchema.safeParse({ ...validPayload, phoneNumber: '12345' });
     expect(result.success).toBe(false);
   });
 

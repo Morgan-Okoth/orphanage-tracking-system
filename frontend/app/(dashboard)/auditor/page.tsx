@@ -214,7 +214,7 @@ function AuditorDashboardContent() {
 
 export default function AuditorDashboardPage() {
   return (
-    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_2]}>
+    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN]}>
       <AuditorDashboardContent />
     </ProtectedRoute>
   );

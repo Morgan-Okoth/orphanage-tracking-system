@@ -3,6 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { render } from '../test-utils';
 import RequestForm from '../../components/requests/RequestForm';
+import { RequestStatus, RequestType } from '../../lib/types/request';
 
 // Mock Next.js router
 const mockPush = vi.fn();
@@ -24,9 +25,26 @@ vi.mock('../../lib/api/documents', () => ({
   },
 }));
 
-// Mock DocumentUpload to avoid file input complexity
-vi.mock('../documents/DocumentUpload', () => ({
-  default: () => <div data-testid="document-upload">Document Upload</div>,
+// Mock DocumentUpload with a button that injects a file into the form
+vi.mock('../../components/documents/DocumentUpload', () => ({
+  default: ({ onChange }: { onChange: (files: Array<{ file: File; id: string }>) => void }) => (
+    <button
+      type="button"
+      data-testid="document-upload"
+      onClick={() =>
+        onChange([
+          {
+            id: 'doc-1',
+            file: new File(['stub'], 'supporting-document.pdf', {
+              type: 'application/pdf',
+            }),
+          },
+        ])
+      }
+    >
+      Add document
+    </button>
+  ),
 }));
 
 import { requestsApi } from '../../lib/api/requests';
@@ -75,18 +93,28 @@ describe('RequestForm', () => {
     const user = userEvent.setup();
     mockCreate.mockResolvedValueOnce({
       success: true,
-      data: { id: 'req-123', type: 'SCHOOL_FEES', amount: 5000, reason: 'Need school fees', status: 'SUBMITTED', submittedAt: new Date().toISOString() },
+      data: {
+        id: 'req-123',
+        studentId: 'student-1',
+        type: RequestType.SCHOOL_FEES,
+        amount: 5000,
+        reason: 'Need school fees',
+        status: RequestStatus.SUBMITTED,
+        submittedAt: new Date(),
+      },
     });
 
     render(<RequestForm />);
 
     await user.type(screen.getByLabelText(/amount/i), '5000');
     await user.type(screen.getByLabelText(/reason/i), 'Need funds for school fees this term');
+    await user.click(screen.getByTestId('document-upload'));
     await user.click(screen.getByRole('button', { name: /submit request/i }));
 
     await waitFor(() => {
       expect(mockCreate).toHaveBeenCalledWith(
         expect.objectContaining({ amount: 5000, reason: 'Need funds for school fees this term' }),
+        expect.arrayContaining([expect.any(File)]),
       );
       expect(mockPush).toHaveBeenCalledWith('/student/requests/req-123');
     });
@@ -100,10 +128,24 @@ describe('RequestForm', () => {
 
     await user.type(screen.getByLabelText(/amount/i), '5000');
     await user.type(screen.getByLabelText(/reason/i), 'Need funds for school fees this term');
+    await user.click(screen.getByTestId('document-upload'));
     await user.click(screen.getByRole('button', { name: /submit request/i }));
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+  });
+
+  it('shows error when no supporting document is attached', async () => {
+    const user = userEvent.setup();
+    render(<RequestForm />);
+
+    await user.type(screen.getByLabelText(/amount/i), '5000');
+    await user.type(screen.getByLabelText(/reason/i), 'Need funds for school fees this term');
+    await user.click(screen.getByRole('button', { name: /submit request/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/at least one supporting document is required/i);
     });
   });
 

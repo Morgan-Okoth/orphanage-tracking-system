@@ -9,10 +9,10 @@ export default function RegisterPage() {
     <Card>
       <CardContent sx={{ p: 4 }}>
         <Typography variant="h4" align="center" gutterBottom>
-          Create Account
+          Beneficiary Registration
         </Typography>
         <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
-          Financial Transparency System
+          Apply for support access. Staff and oversight roles are provisioned internally.
         </Typography>
         <RegisterForm />
         <Box sx={{ mt: 2, textAlign: 'center' }}>

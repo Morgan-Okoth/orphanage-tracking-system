@@ -21,7 +21,7 @@ function AuditLogContent() {
 
 export default function AuditLogPage() {
   return (
-    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_2]}>
+    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN]}>
       <AuditLogContent />
     </ProtectedRoute>
   );

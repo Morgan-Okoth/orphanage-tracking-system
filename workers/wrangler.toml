@@ -1,6 +1,8 @@
 name = "financial-transparency-api"
 main = "api/index.ts"
-compatibility_date = "2024-01-01"
+compatibility_date = "2024-09-23"
+account_id = "fd674dbcc2935f7d4c8c3743b8c5d95a"
+compatibility_flags = ["nodejs_compat"]
 
 [triggers]
 crons = ["0 2 * * *"]
@@ -9,7 +11,7 @@ crons = ["0 2 * * *"]
 [[d1_databases]]
 binding = "DB"
 database_name = "financial-transparency-db"
-database_id = "your-database-id"
+database_id = "e4bf2bfa-d6ad-4d01-82eb-5122337bc998"
 
 # R2 Storage
 [[r2_buckets]]
@@ -23,11 +25,11 @@ bucket_name = "financial-backups"
 # KV Namespaces
 [[kv_namespaces]]
 binding = "CACHE"
-id = "your-cache-kv-id"
+id = "1eab3193fdba43b180aba4fc9ef79b5c"
 
 [[kv_namespaces]]
 binding = "SESSIONS"
-id = "your-sessions-kv-id"
+id = "88b90cd1b76f4e07afa3a62ce8efd2a8"
 
 # Queues
 [[queues.producers]]
@@ -66,6 +68,9 @@ REFRESH_TOKEN_EXPIRY = "604800"
 [env.production]
 name = "financial-transparency-api"
 
+[env.production.ai]
+binding = "AI"
+
 [env.production.vars]
 ENVIRONMENT = "production"
 JWT_EXPIRY = "3600"
@@ -74,7 +79,7 @@ REFRESH_TOKEN_EXPIRY = "604800"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "financial-transparency-db"
-database_id = "your-production-database-id"
+database_id = "e4bf2bfa-d6ad-4d01-82eb-5122337bc998"
 
 [[env.production.r2_buckets]]
 binding = "DOCUMENTS_BUCKET"
@@ -86,11 +91,11 @@ bucket_name = "financial-backups-prod"
 
 [[env.production.kv_namespaces]]
 binding = "CACHE"
-id = "your-production-cache-kv-id"
+id = "1eab3193fdba43b180aba4fc9ef79b5c"
 
 [[env.production.kv_namespaces]]
 binding = "SESSIONS"
-id = "your-production-sessions-kv-id"
+id = "88b90cd1b76f4e07afa3a62ce8efd2a8"
 
 [[env.production.queues.producers]]
 binding = "EMAIL_QUEUE"
@@ -118,12 +123,11 @@ dead_letter_queue = "sms-notifications-prod-dlq"
 # JWT_SECRET
 # ENCRYPTION_KEY  - Must be a 64-char hex string (32 bytes for AES-256-GCM)
 #                   Generate: openssl rand -hex 32
-# MPESA_CONSUMER_KEY
-# MPESA_CONSUMER_SECRET
-# MPESA_SHORTCODE
-# MPESA_PASSKEY
-# MPESA_CALLBACK_URL
-# SENDGRID_API_KEY
+# INTASEND_SECRET_KEY
+# INTASEND_CALLBACK_URL
+# INTASEND_WEBHOOK_CHALLENGE
+# INTASEND_DEVICE_ID
+# RESEND_API_KEY
 # AT_API_KEY
 # AT_USERNAME
 # AT_SENDER_ID

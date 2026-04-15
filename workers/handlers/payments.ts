@@ -11,7 +11,7 @@ import { initiatePaymentSchema } from '../utils/schemas';
 export const paymentHandlers = {
   /**
    * POST /api/v1/payments/initiate
-   * Initiate M-Pesa payment for a verified request
+   * Initiate IntaSend payout for a verified request
    * Requirements: 7.1, 7.5
    */
   async initiatePayment(c: Context): Promise<Response> {
@@ -40,7 +40,7 @@ export const paymentHandlers = {
 
       return c.json<ApiResponse>({
         success: true,
-        message: 'Payment initiated successfully',
+        message: 'Payout initiated successfully',
         data: result,
       }, 200);
     } catch (error) {
@@ -103,7 +103,7 @@ export const paymentHandlers = {
         success: false,
         error: {
           code: 'PAYMENT_INITIATION_FAILED',
-          message: 'Failed to initiate payment',
+          message: 'Failed to initiate IntaSend payout',
         },
       }, 500);
     }
@@ -111,7 +111,7 @@ export const paymentHandlers = {
 
   /**
    * POST /api/v1/payments/webhook
-   * Handle M-Pesa callback webhook
+   * Handle IntaSend callback webhook
    * Requirements: 7.2, 7.3, 7.4, 7.6
    */
   async handleWebhook(c: Context): Promise<Response> {
@@ -119,7 +119,7 @@ export const paymentHandlers = {
       const callbackData = await c.req.json();
 
       // Validate callback structure
-      if (!callbackData.Body || !callbackData.Body.stkCallback) {
+      if (!callbackData.tracking_id) {
         return c.json<ApiResponse>({
           success: false,
           error: {
@@ -138,6 +138,16 @@ export const paymentHandlers = {
       }, 200);
     } catch (error) {
       console.error('Webhook processing error:', error);
+
+      if (error instanceof Error && error.message === 'INVALID_WEBHOOK_CHALLENGE') {
+        return c.json<ApiResponse>({
+          success: false,
+          error: {
+            code: 'INVALID_WEBHOOK_CHALLENGE',
+            message: 'Webhook challenge validation failed',
+          },
+        }, 401);
+      }
 
       return c.json<ApiResponse>({
         success: false,

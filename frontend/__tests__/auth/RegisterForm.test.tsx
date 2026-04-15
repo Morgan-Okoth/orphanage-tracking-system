@@ -101,7 +101,7 @@ describe('RegisterForm', () => {
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toBeInTheDocument();
+      expect(screen.getByText(/registration failed\. please try again\./i)).toBeInTheDocument();
     });
   });
 });

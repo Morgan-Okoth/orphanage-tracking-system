@@ -42,6 +42,33 @@ export const permissions = {
     'comment:read:all',
     'notification:read:own',
   ],
+  [UserRole.SUPERADMIN]: [
+    'request:create',
+    'request:read:own',
+    'request:update:own:draft',
+    'request:read:all',
+    'request:review',
+    'request:approve',
+    'request:verify',
+    'request:flag',
+    'request:reject',
+    'request:request-docs',
+    'document:upload:own',
+    'document:read:own',
+    'document:read:all',
+    'user:create',
+    'user:approve',
+    'user:deactivate',
+    'user:read:all',
+    'user:role:update',
+    'payment:initiate',
+    'audit:read',
+    'report:generate',
+    'comment:create',
+    'comment:create:internal',
+    'comment:read:all',
+    'notification:read:own',
+  ],
 };
 
 /**
@@ -287,7 +314,11 @@ export function isAdmin(c: Context): boolean {
   if (!user) {
     return false;
   }
-  return user.role === UserRole.ADMIN_LEVEL_1 || user.role === UserRole.ADMIN_LEVEL_2;
+  return (
+    user.role === UserRole.ADMIN_LEVEL_1 ||
+    user.role === UserRole.ADMIN_LEVEL_2 ||
+    user.role === UserRole.SUPERADMIN
+  );
 }
 
 /**

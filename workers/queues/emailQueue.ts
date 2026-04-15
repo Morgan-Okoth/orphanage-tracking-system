@@ -18,67 +18,46 @@ export interface EmailQueueMessage {
 }
 
 /**
- * Send email via SendGrid API
+ * Send email via Resend API
  */
-async function sendEmailViaSendGrid(
+async function sendEmailViaResend(
   message: EmailQueueMessage,
   apiKey: string
 ): Promise<void> {
-  const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+  const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      personalizations: [
-        {
-          to: [{ email: message.to }],
-        },
-      ],
-      from: {
-        email: 'noreply@bethelraysofhope.org',
-        name: 'Bethel Rays of Hope',
-      },
+      from: 'Bethel Rays of Hope <noreply@bethelraysofhope.org>',
+      to: [message.to],
       subject: message.subject,
-      content: [
-        {
-          type: 'text/plain',
-          value: message.text,
-        },
-        ...(message.html
-          ? [
-              {
-                type: 'text/html',
-                value: message.html,
-              },
-            ]
-          : []),
-      ],
+      text: message.text,
+      ...(message.html ? { html: message.html } : {}),
     }),
   });
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`SendGrid API error: ${response.status} - ${error}`);
+    throw new Error(`Resend API error: ${response.status} - ${error}`);
   }
 }
 
 /**
- * Send batch emails via SendGrid API (more efficient for multiple emails)
+ * Send batch emails via Resend API
  */
-async function sendBatchEmailsViaSendGrid(
+async function sendBatchEmailsViaResend(
   messages: EmailQueueMessage[],
   apiKey: string
 ): Promise<{ success: EmailQueueMessage[]; failed: { message: EmailQueueMessage; error: string }[] }> {
   const success: EmailQueueMessage[] = [];
   const failed: { message: EmailQueueMessage; error: string }[] = [];
 
-  // SendGrid supports batch sending, but for simplicity, we'll send individually
-  // In production, you might want to use SendGrid's batch API
   for (const message of messages) {
     try {
-      await sendEmailViaSendGrid(message, apiKey);
+      await sendEmailViaResend(message, apiKey);
       success.push(message);
     } catch (error) {
       failed.push({
@@ -159,9 +138,9 @@ export default {
     for (const messageBatch of messageBatches) {
       try {
         // Send batch of emails
-        const { success, failed } = await sendBatchEmailsViaSendGrid(
+        const { success, failed } = await sendBatchEmailsViaResend(
           messageBatch,
-          env.SENDGRID_API_KEY
+          env.RESEND_API_KEY
         );
 
         // Update successful notifications

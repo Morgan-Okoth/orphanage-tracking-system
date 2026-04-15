@@ -2,11 +2,15 @@
 
 A secure, mobile-first web application for managing financial requests from beneficiaries through a complete lifecycle: submission, review, approval, verification, payment, and archival.
 
+Live systems:
+- Frontend: `https://orphanage-tracking-frontend.vercel.app`
+- Backend: `https://financial-transparency-api.morgan-ent.workers.dev`
+
 ## Project Structure
 
 ```
 orphanage-tracking-system/
-├── frontend/          # Next.js 14+ frontend application
+├── frontend/          # Next.js 16 frontend application
 ├── workers/           # Cloudflare Workers backend API
 └── .kiro/            # Kiro spec files
 ```
@@ -14,12 +18,12 @@ orphanage-tracking-system/
 ## Technology Stack
 
 ### Frontend
-- **Framework**: Next.js 14+ with App Router
+- **Framework**: Next.js 16 with App Router
 - **Language**: TypeScript (strict mode)
 - **UI Library**: Material-UI v5
 - **State Management**: React Context + TanStack Query
 - **Form Management**: React Hook Form + Zod
-- **Hosting**: Cloudflare Pages
+- **Hosting**: Vercel
 
 ### Backend
 - **Runtime**: Cloudflare Workers
@@ -61,8 +65,13 @@ The API will be available at `http://localhost:8787`
 
 #### Frontend
 Copy `.env.local.example` to `.env.local` and configure:
-```
+```bash
 NEXT_PUBLIC_API_URL=http://localhost:8787/api/v1
+```
+
+Production frontend uses:
+```bash
+NEXT_PUBLIC_API_URL=https://financial-transparency-api.morgan-ent.workers.dev/api/v1
 ```
 
 #### Workers
@@ -100,7 +109,7 @@ npm run lint
 ## Architecture
 
 The system follows a modern edge-first architecture:
-- Frontend deployed to Cloudflare Pages
+- Frontend deployed to Vercel
 - Backend API running on Cloudflare Workers (edge compute)
 - Database on Cloudflare D1 (SQLite at the edge)
 - Document storage on Cloudflare R2
@@ -109,13 +118,14 @@ The system follows a modern edge-first architecture:
 
 ## Key Features
 
-- Role-based access control (Student, Admin Level 1, Admin Level 2)
+- Role-based access control (Beneficiary, Admin Level 1, Admin Level 2, Superadmin)
 - Complete request lifecycle management
 - Document storage with version control
-- M-Pesa payment integration
+- IntaSend payout integration
 - Email and SMS notifications
 - Immutable audit logging
 - Public transparency dashboard
+- Public donor journey via `/donate`
 - AI-assisted reporting and anomaly detection
 - Mobile-first responsive design
 - Offline support (PWA)

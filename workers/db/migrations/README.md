@@ -7,6 +7,8 @@ This directory contains SQL migration scripts for the Financial Transparency and
 ### Initial Schema Migration
 - **0001_initial_schema.sql** - Creates all database tables and indexes
 - **0001_rollback.sql** - Rolls back the initial schema (drops all tables)
+- **0002_notifications_read_at.sql** - Adds notification read tracking
+- **0003_add_superadmin_role.sql** - Expands the users role constraint to support `SUPERADMIN`
 
 ### Seed Data
 - **seed_dev.sql** - Populates the database with test data for development
@@ -103,6 +105,7 @@ wrangler d1 execute financial-transparency-db --local --command="SELECT COUNT(*)
 All test users have the password: `TestPass123!`
 
 ### Admin Accounts
+- **Superadmin**: superadmin@bethelraysofhope.org
 - **Auditor (Admin Level 2)**: auditor@bethelraysofhope.org
 - **Operations (Admin Level 1)**: operations@bethelraysofhope.org
 - **Admin (Admin Level 1)**: admin@bethelraysofhope.org
@@ -142,6 +145,8 @@ All test users have the password: `TestPass123!`
 | Version | Date | Description | Author |
 |---------|------|-------------|--------|
 | 0001 | 2024-01-15 | Initial schema with all tables | System |
+| 0002 | 2024-01-15 | Notification read tracking | System |
+| 0003 | 2026-04-15 | Add SUPERADMIN role support | System |
 
 ## Next Steps
 

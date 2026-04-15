@@ -16,7 +16,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 interface LoginFormProps {
-  onSuccess?: () => void;
+  onSuccess?: (userRole: string) => void;
 }
 
 export default function LoginForm({ onSuccess }: LoginFormProps) {
@@ -32,8 +32,10 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   const onSubmit = async (values: FormValues) => {
     setError(null);
     try {
-      await login(values);
-      onSuccess?.();
+      const user = await login(values);
+      if (user) {
+        onSuccess?.(user.role);
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Login failed. Please try again.');
     }

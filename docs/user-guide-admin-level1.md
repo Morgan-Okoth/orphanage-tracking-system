@@ -61,9 +61,9 @@ Payments can only be initiated for requests with status **Verified** (approved b
 
 1. Open a **Verified** request.
 2. Click **Initiate Payment**.
-3. Confirm the M-Pesa phone number and amount.
-4. Click **Send Payment** — an M-Pesa STK Push is sent to the student's phone.
-5. The student completes the payment on their phone.
+3. Confirm the recipient phone number and amount.
+4. Click **Initiate Payout** — an IntaSend payout request is created for the student.
+5. IntaSend processes the payout through the configured mobile-money channel.
 6. The request status updates to **Paid** automatically.
 
 If payment fails, you will be notified and can retry.

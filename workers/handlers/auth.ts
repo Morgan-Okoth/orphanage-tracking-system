@@ -2,7 +2,7 @@ import { Context } from 'hono';
 import { z } from 'zod';
 import { AuthService } from '../services/authService';
 import { NotificationService } from '../services/notificationService';
-import { AccountStatus, AuditAction, ApiResponse } from '../types';
+import { AccountStatus, AuditAction, ApiResponse, UserRole } from '../types';
 import { auditLog } from '../services/auditService';
 import { eq } from 'drizzle-orm';
 import { users } from '../db/schema';
@@ -28,6 +28,7 @@ export async function register(c: Context): Promise<Response> {
     // Sanitize text inputs before storing
     const sanitizedData = {
       ...validatedData,
+      role: UserRole.STUDENT,
       firstName: sanitizeText(validatedData.firstName, 100),
       lastName: sanitizeText(validatedData.lastName, 100),
     };

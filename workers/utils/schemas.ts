@@ -34,7 +34,6 @@ export const registerSchema = z.object({
   password: passwordField,
   firstName: nameField('First name'),
   lastName: nameField('Last name'),
-  role: z.nativeEnum(UserRole),
 });
 
 export const loginSchema = z.object({
@@ -127,6 +126,7 @@ export const updateUserSchema = z.object({
   lastName: nameField('Last name').optional(),
   phone: phoneField.optional(),
   email: emailField.optional(),
+  role: z.nativeEnum(UserRole).optional(),
 });
 
 export const rejectUserSchema = z.object({
@@ -154,7 +154,7 @@ export const initiatePaymentSchema = z.object({
   requestId: uuidField,
   phoneNumber: z
     .string()
-    .regex(/^\+?254[0-9]{9}$/, 'Invalid Kenyan phone number format'),
+    .regex(/^\+?(254|0)[0-9]{9}$/, 'Invalid Kenyan phone number format'),
   amount: z
     .number({ invalid_type_error: 'Amount must be a number' })
     .positive('Amount must be positive')

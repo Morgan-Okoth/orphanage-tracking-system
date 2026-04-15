@@ -22,7 +22,7 @@ const app = new Hono<{ Bindings: Env; Variables: { user: JWTPayload } }>();
 
 // All reporting endpoints are restricted to ADMIN_LEVEL_2 only
 app.use('*', authMiddleware());
-app.use('*', requireRole(UserRole.ADMIN_LEVEL_2));
+app.use('*', requireRole(UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN));
 
 /**
  * Parse a YYYY-MM string into start/end Date boundaries for that month.

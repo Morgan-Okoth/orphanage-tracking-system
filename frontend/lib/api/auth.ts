@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 import { ApiResponse } from '../types/api';
-import { User, UserRole } from '../types/user';
+import { User } from '../types/user';
 
 export interface LoginRequest {
   email: string;
@@ -13,7 +13,6 @@ export interface RegisterRequest {
   firstName: string;
   lastName: string;
   phone: string;
-  role: UserRole;
 }
 
 export interface AuthTokens {
@@ -23,7 +22,9 @@ export interface AuthTokens {
 
 export interface AuthResponse {
   user: User;
-  tokens: AuthTokens;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
 }
 
 export const authApi = {
@@ -33,7 +34,8 @@ export const authApi = {
   register: (data: RegisterRequest) =>
     apiClient.post<ApiResponse<{ user: User }>>('/auth/register', data),
 
-  logout: () => apiClient.post<ApiResponse<null>>('/auth/logout', {}),
+  logout: (refreshToken: string) =>
+    apiClient.post<ApiResponse<null>>('/auth/logout', { refreshToken }),
 
   me: () => apiClient.get<ApiResponse<User>>('/auth/me'),
 };

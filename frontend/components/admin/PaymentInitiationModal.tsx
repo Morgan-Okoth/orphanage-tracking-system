@@ -88,7 +88,7 @@ export default function PaymentInitiationModal({
 
   return (
     <Dialog open={open} onClose={mutation.isPending ? undefined : handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Initiate M-Pesa Payment</DialogTitle>
+      <DialogTitle>Initiate IntaSend Payout</DialogTitle>
 
       <DialogContent>
         {/* Request summary */}
@@ -116,7 +116,7 @@ export default function PaymentInitiationModal({
               Payment Initiated
             </Typography>
             <Typography variant="body2" color="text.secondary" textAlign="center">
-              An M-Pesa prompt has been sent to the registered phone number.
+              The IntaSend payout request has been created for the registered phone number.
             </Typography>
             <Box sx={{ bgcolor: 'grey.50', borderRadius: 1, p: 2, width: '100%' }}>
               <Typography variant="caption" color="text.secondary">
@@ -126,10 +126,10 @@ export default function PaymentInitiationModal({
                 {paymentData.transactionId}
               </Typography>
               <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-                Checkout Request ID
+                IntaSend Tracking ID
               </Typography>
               <Typography variant="body2" fontWeight={600}>
-                {paymentData.mpesaCheckoutRequestId}
+                {paymentData.intasendTrackingId}
               </Typography>
               <Typography variant="caption" color="text.secondary" display="block" mt={1}>
                 Status
@@ -147,19 +147,19 @@ export default function PaymentInitiationModal({
             <Stack spacing={2}>
               {mutation.isError && (
                 <Alert severity="error">
-                  {mutation.error?.message ?? 'Payment initiation failed. Please try again.'}
+                  {mutation.error?.message ?? 'Payout initiation failed. Please try again.'}
                 </Alert>
               )}
 
               <TextField
-                label="M-Pesa Phone Number"
+                label="Recipient Phone Number"
                 placeholder="+254712345678 or 0712345678"
                 fullWidth
                 disabled={mutation.isPending}
                 error={!!errors.phoneNumber}
                 helperText={
                   errors.phoneNumber?.message ??
-                  'Enter the M-Pesa registered phone number'
+                  'Enter the payout recipient phone number'
                 }
                 {...register('phoneNumber')}
               />
@@ -168,7 +168,7 @@ export default function PaymentInitiationModal({
                 <Stack direction="row" spacing={1.5} alignItems="center">
                   <CircularProgress size={20} />
                   <Typography variant="body2" color="text.secondary">
-                    Sending payment request...
+                    Sending payout request...
                   </Typography>
                 </Stack>
               )}
@@ -188,7 +188,7 @@ export default function PaymentInitiationModal({
             variant="contained"
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? 'Processing...' : 'Initiate Payment'}
+            {mutation.isPending ? 'Processing...' : 'Initiate Payout'}
           </Button>
         )}
         {mutation.isError && (

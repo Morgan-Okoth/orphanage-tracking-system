@@ -13,7 +13,7 @@ export const usersApi = {
   listUsers: (filters: UserFilters = {}) => {
     const params = new URLSearchParams();
     if (filters.role) params.set('role', filters.role);
-    if (filters.status) params.set('status', filters.status);
+    if (filters.status) params.set('accountStatus', filters.status);
     params.set('page', String(filters.page ?? 1));
     params.set('limit', String(filters.limit ?? 20));
     return apiClient.get<ApiResponse<PaginatedResponse<User>>>(
@@ -26,6 +26,9 @@ export const usersApi = {
 
   getUser: (id: string) =>
     apiClient.get<ApiResponse<User>>(`/users/${id}`),
+
+  updateUser: (id: string, body: Partial<Pick<User, 'firstName' | 'lastName' | 'email' | 'phone' | 'role'>>) =>
+    apiClient.patch<ApiResponse<User>>(`/users/${id}`, body),
 
   approveUser: (id: string) =>
     apiClient.post<ApiResponse<User>>(`/users/${id}/approve`, {}),

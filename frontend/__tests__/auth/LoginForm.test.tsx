@@ -48,7 +48,7 @@ describe('LoginForm', () => {
 
   it('calls login with correct credentials on valid submit', async () => {
     const user = userEvent.setup();
-    mockLogin.mockResolvedValueOnce(undefined);
+    mockLogin.mockResolvedValueOnce({ role: 'ADMIN_LEVEL_1' });
     const onSuccess = vi.fn();
 
     render(<LoginForm onSuccess={onSuccess} />);
@@ -62,7 +62,7 @@ describe('LoginForm', () => {
         email: 'admin@example.com',
         password: 'password123',
       });
-      expect(onSuccess).toHaveBeenCalled();
+      expect(onSuccess).toHaveBeenCalledWith('ADMIN_LEVEL_1');
     });
   });
 

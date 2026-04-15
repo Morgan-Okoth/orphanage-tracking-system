@@ -7,7 +7,7 @@ export const users = sqliteTable('users', {
   email: text('email').notNull().unique(),
   phone: text('phone').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
-  role: text('role', { enum: ['STUDENT', 'ADMIN_LEVEL_1', 'ADMIN_LEVEL_2'] }).notNull(),
+  role: text('role', { enum: ['STUDENT', 'ADMIN_LEVEL_1', 'ADMIN_LEVEL_2', 'SUPERADMIN'] }).notNull(),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
   accountStatus: text('account_status', { 

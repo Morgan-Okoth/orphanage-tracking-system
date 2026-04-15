@@ -72,7 +72,7 @@ function FlaggedCasesContent() {
 
 export default function FlaggedCasesPage() {
   return (
-    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_2]}>
+    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN]}>
       <FlaggedCasesContent />
     </ProtectedRoute>
   );

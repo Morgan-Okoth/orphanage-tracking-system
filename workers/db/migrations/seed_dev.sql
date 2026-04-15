@@ -18,6 +18,11 @@ DELETE FROM users;
 -- Password for all users: TestPass123! (hashed with bcrypt, 12 rounds)
 -- Hash: $2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYILSBL9fSu
 
+-- Superadmin
+INSERT INTO users (id, email, phone, password_hash, role, first_name, last_name, account_status, is_email_verified, is_phone_verified, created_at, updated_at)
+VALUES
+  ('superadmin-001', 'superadmin@bethelraysofhope.org', '+254700000000', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYILSBL9fSu', 'SUPERADMIN', 'Bethel', 'Governance', 'ACTIVE', 1, 1, strftime('%s', 'now'), strftime('%s', 'now'));
+
 -- Admin Level 2 (Auditor)
 INSERT INTO users (id, email, phone, password_hash, role, first_name, last_name, account_status, is_email_verified, is_phone_verified, created_at, updated_at)
 VALUES 
@@ -26,8 +31,8 @@ VALUES
 -- Admin Level 1 (Operations)
 INSERT INTO users (id, email, phone, password_hash, role, first_name, last_name, account_status, is_email_verified, is_phone_verified, created_at, updated_at, approved_by_id)
 VALUES 
-  ('admin1-001', 'operations@bethelraysofhope.org', '+254700000002', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYILSBL9fSu', 'ADMIN_LEVEL_1', 'John', 'Mwangi', 'ACTIVE', 1, 1, strftime('%s', 'now'), strftime('%s', 'now'), 'admin2-001'),
-  ('admin1-002', 'admin@bethelraysofhope.org', '+254700000003', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYILSBL9fSu', 'ADMIN_LEVEL_1', 'Grace', 'Wanjiru', 'ACTIVE', 1, 1, strftime('%s', 'now'), strftime('%s', 'now'), 'admin2-001');
+  ('admin1-001', 'operations@bethelraysofhope.org', '+254700000002', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYILSBL9fSu', 'ADMIN_LEVEL_1', 'John', 'Mwangi', 'ACTIVE', 1, 1, strftime('%s', 'now'), strftime('%s', 'now'), 'superadmin-001'),
+  ('admin1-002', 'admin@bethelraysofhope.org', '+254700000003', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYILSBL9fSu', 'ADMIN_LEVEL_1', 'Grace', 'Wanjiru', 'ACTIVE', 1, 1, strftime('%s', 'now'), strftime('%s', 'now'), 'superadmin-001');
 
 -- Students (Active)
 INSERT INTO users (id, email, phone, password_hash, role, first_name, last_name, account_status, is_email_verified, is_phone_verified, created_at, updated_at, approved_by_id)

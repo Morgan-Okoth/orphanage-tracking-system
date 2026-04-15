@@ -183,7 +183,7 @@ function ReportsContent() {
 
 export default function ReportsPage() {
   return (
-    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_2]}>
+    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN]}>
       <ReportsContent />
     </ProtectedRoute>
   );

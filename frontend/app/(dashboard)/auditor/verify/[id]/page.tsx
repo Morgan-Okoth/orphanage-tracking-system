@@ -246,7 +246,7 @@ function VerificationDetailContent({ id }: { id: string }) {
 export default function VerificationDetailPage({ params }: Props) {
   const { id } = use(params);
   return (
-    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_2]}>
+    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN]}>
       <VerificationDetailContent id={id} />
     </ProtectedRoute>
   );

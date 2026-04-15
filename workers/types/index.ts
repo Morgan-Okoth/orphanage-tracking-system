@@ -2,7 +2,8 @@
 export enum UserRole {
   STUDENT = 'STUDENT',
   ADMIN_LEVEL_1 = 'ADMIN_LEVEL_1',
-  ADMIN_LEVEL_2 = 'ADMIN_LEVEL_2'
+  ADMIN_LEVEL_2 = 'ADMIN_LEVEL_2',
+  SUPERADMIN = 'SUPERADMIN'
 }
 
 export enum AccountStatus {

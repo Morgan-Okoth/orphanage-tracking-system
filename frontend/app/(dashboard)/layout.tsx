@@ -28,10 +28,13 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import HistoryIcon from '@mui/icons-material/History';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
+import ShieldIcon from '@mui/icons-material/Shield';
+import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import Link from 'next/link';
 import { useAuth } from '../../lib/contexts/AuthContext';
 import { UserRole } from '../../lib/types/user';
 import ProtectedRoute from '../../components/auth/ProtectedRoute';
+import { getRoleLabel } from '../../lib/utils/roleRoutes';
 
 const DRAWER_WIDTH = 220;
 
@@ -64,19 +67,37 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     { href: '/auditor/flagged', label: 'Flagged Cases', icon: <FlagIcon /> },
   ];
 
+  const superadminLinks: NavLink[] = [
+    { href: '/superadmin', label: 'Overview', icon: <ShieldIcon /> },
+    { href: '/admin/requests', label: 'Operations Queue', icon: <AssignmentIcon /> },
+    { href: '/admin/users', label: 'User Governance', icon: <PeopleIcon /> },
+    { href: '/admin/users/pending', label: 'Pending Approvals', icon: <PendingActionsIcon /> },
+    { href: '/auditor/reports', label: 'Audit Reports', icon: <BarChartIcon /> },
+    { href: '/donate', label: 'Donor Journey', icon: <VolunteerActivismIcon /> },
+  ];
+
   const links =
     user?.role === UserRole.STUDENT
       ? studentLinks
       : user?.role === UserRole.ADMIN_LEVEL_2
         ? auditorLinks
-        : adminLinks;
+        : user?.role === UserRole.SUPERADMIN
+          ? superadminLinks
+          : adminLinks;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Toolbar>
-        <Typography variant="h6" noWrap fontWeight={700}>
-          FTS
-        </Typography>
+        <Box>
+          <Typography variant="h6" noWrap fontWeight={700}>
+            FTS
+          </Typography>
+          {user && (
+            <Typography variant="caption" color="text.secondary">
+              {getRoleLabel(user.role)}
+            </Typography>
+          )}
+        </Box>
       </Toolbar>
       <Divider />
       <List sx={{ flex: 1 }} role="navigation" aria-label="Main navigation">

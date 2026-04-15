@@ -77,7 +77,7 @@ export default function PendingApprovalsPage() {
   };
 
   return (
-    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_1]}>
+    <ProtectedRoute allowedRoles={[UserRole.ADMIN_LEVEL_1, UserRole.SUPERADMIN]}>
       <Box>
         <Stack direction="row" alignItems="center" spacing={2} mb={3}>
           <Button
