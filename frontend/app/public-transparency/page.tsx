@@ -1,21 +1,9 @@
+'use client';
+
 import { Box, Container, Typography, Button, Divider, Paper } from '@mui/material';
 import { Home as HomeIcon, BarChart as BarChartIcon } from '@mui/icons-material';
 import Link from 'next/link';
-import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-
-// Dynamically import the heavy dashboard component (contains charts)
-const PublicDashboard = dynamic(() => import('../../components/transparency/PublicDashboard'), {
-  loading: () => <LoadingSpinner />,
-  ssr: false,
-});
-
-export const metadata: Metadata = {
-  title: 'Financial Transparency Dashboard | Bethel Rays of Hope',
-  description:
-    'Public financial transparency dashboard showing fund allocation, disbursements, and request statistics for Bethel Rays of Hope NGO.',
-};
+import PublicDashboard from '../../components/transparency/PublicDashboard';
 
 export default function PublicTransparencyPage() {
   return (
