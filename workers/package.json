@@ -1,0 +1,44 @@
+{
+  "name": "financial-transparency-api",
+  "version": "1.0.0",
+  "description": "Cloudflare Workers API for Financial Transparency System",
+  "main": "api/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate:sqlite",
+    "db:migrate": "wrangler d1 migrations apply financial-transparency-db",
+    "db:studio": "drizzle-kit studio",
+    "db:init": "wrangler d1 execute financial-transparency-db --local --file=./db/migrations/0001_initial_schema.sql",
+    "db:init:remote": "wrangler d1 execute financial-transparency-db --file=./db/migrations/0001_initial_schema.sql",
+    "db:seed": "wrangler d1 execute financial-transparency-db --local --file=./db/migrations/seed_dev.sql",
+    "db:rollback": "wrangler d1 execute financial-transparency-db --local --file=./db/migrations/0001_rollback.sql",
+    "db:rollback:remote": "wrangler d1 execute financial-transparency-db --file=./db/migrations/0001_rollback.sql",
+    "db:verify": "wrangler d1 execute financial-transparency-db --local --command=\"SELECT name FROM sqlite_master WHERE type='table';\"",
+    "db:verify:remote": "wrangler d1 execute financial-transparency-db --command=\"SELECT name FROM sqlite_master WHERE type='table';\"",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"**/*.ts\""
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "drizzle-orm": "^0.29.0",
+    "hono": "^3.12.0",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231218.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@typescript-eslint/eslint-plugin": "^6.18.0",
+    "@typescript-eslint/parser": "^6.18.0",
+    "drizzle-kit": "^0.20.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.4",
+    "wrangler": "^3.22.0"
+  }
+}

@@ -1,0 +1,129 @@
+name = "financial-transparency-api"
+main = "api/index.ts"
+compatibility_date = "2024-01-01"
+
+[triggers]
+crons = ["0 2 * * *"]
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "financial-transparency-db"
+database_id = "your-database-id"
+
+# R2 Storage
+[[r2_buckets]]
+binding = "DOCUMENTS_BUCKET"
+bucket_name = "financial-documents"
+
+[[r2_buckets]]
+binding = "BACKUPS_BUCKET"
+bucket_name = "financial-backups"
+
+# KV Namespaces
+[[kv_namespaces]]
+binding = "CACHE"
+id = "your-cache-kv-id"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "your-sessions-kv-id"
+
+# Queues
+[[queues.producers]]
+binding = "EMAIL_QUEUE"
+queue = "email-notifications"
+
+[[queues.producers]]
+binding = "SMS_QUEUE"
+queue = "sms-notifications"
+
+[[queues.consumers]]
+queue = "email-notifications"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "email-notifications-dlq"
+
+[[queues.consumers]]
+queue = "sms-notifications"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "sms-notifications-dlq"
+
+# Workers AI
+[ai]
+binding = "AI"
+
+# ─── Development environment ──────────────────────────────────────────────────
+[vars]
+ENVIRONMENT = "development"
+JWT_EXPIRY = "3600"
+REFRESH_TOKEN_EXPIRY = "604800"
+
+# ─── Production environment ───────────────────────────────────────────────────
+[env.production]
+name = "financial-transparency-api"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+JWT_EXPIRY = "3600"
+REFRESH_TOKEN_EXPIRY = "604800"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "financial-transparency-db"
+database_id = "your-production-database-id"
+
+[[env.production.r2_buckets]]
+binding = "DOCUMENTS_BUCKET"
+bucket_name = "financial-documents-prod"
+
+[[env.production.r2_buckets]]
+binding = "BACKUPS_BUCKET"
+bucket_name = "financial-backups-prod"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE"
+id = "your-production-cache-kv-id"
+
+[[env.production.kv_namespaces]]
+binding = "SESSIONS"
+id = "your-production-sessions-kv-id"
+
+[[env.production.queues.producers]]
+binding = "EMAIL_QUEUE"
+queue = "email-notifications-prod"
+
+[[env.production.queues.producers]]
+binding = "SMS_QUEUE"
+queue = "sms-notifications-prod"
+
+[[env.production.queues.consumers]]
+queue = "email-notifications-prod"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "email-notifications-prod-dlq"
+
+[[env.production.queues.consumers]]
+queue = "sms-notifications-prod"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "sms-notifications-prod-dlq"
+
+# Secrets (set with: wrangler secret put <NAME> --env production)
+# JWT_SECRET
+# ENCRYPTION_KEY  - Must be a 64-char hex string (32 bytes for AES-256-GCM)
+#                   Generate: openssl rand -hex 32
+# MPESA_CONSUMER_KEY
+# MPESA_CONSUMER_SECRET
+# MPESA_SHORTCODE
+# MPESA_PASSKEY
+# MPESA_CALLBACK_URL
+# SENDGRID_API_KEY
+# AT_API_KEY
+# AT_USERNAME
+# AT_SENDER_ID
