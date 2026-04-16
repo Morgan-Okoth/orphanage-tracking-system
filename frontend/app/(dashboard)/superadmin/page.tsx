@@ -1,3 +1,5 @@
+'use client';
+
 import { Box, Typography, Divider, Grid, Card, CardContent, Button, Stack } from '@mui/material';
 import Link from 'next/link';
 import ShieldIcon from '@mui/icons-material/Shield';
