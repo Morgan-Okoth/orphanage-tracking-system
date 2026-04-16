@@ -26,55 +26,78 @@ function HeroSection() {
   return (
     <Box
       sx={{
-        px: { xs: 0, md: 0 },
-        py: { xs: 3, md: 5 },
-        color: 'common.white',
+        display: 'flex',
+        alignItems: 'stretch',
+        minHeight: { xs: 'auto', md: '400px' },
       }}
     >
-      <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+      {/* Left content */}
+      <Box
+        sx={{
+          flex: 1,
+          py: { xs: 3, md: 5 },
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+        }}
+      >
+        <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+          <Chip
+            label="Bethel Rays of Hope - Kisumu, Kenya"
+            sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'common.white', fontWeight: 600 }}
+          />
+        </Stack>
+        <Typography variant="h2" sx={{ maxWidth: '16ch', mb: 2 }}>
+          Hope, care, and dignity for every child we serve.
+        </Typography>
+        <Typography variant="body1" sx={{ maxWidth: '65ch', opacity: 0.92 }}>
+          Bethel Rays of Hope is dedicated to supporting vulnerable children and families through
+          compassionate programs, trusted stewardship, and a strong community of supporters.
+        </Typography>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} mt={3.5}>
+          <Button
+            component={Link}
+            href="/public-transparency"
+            variant="contained"
+            endIcon={<ArrowForwardIcon />}
+            sx={{ fontWeight: 600, bgcolor: 'common.white', color: 'primary.main', '&:hover': { bgcolor: 'grey.100' } }}
+          >
+            View Public Updates
+          </Button>
+          <Button
+            component={Link}
+            href="/donate"
+            variant="outlined"
+            sx={{
+              fontWeight: 600,
+              color: 'common.white',
+              borderColor: 'rgba(255,255,255,0.75)',
+              '&:hover': { borderColor: 'common.white', bgcolor: 'rgba(255,255,255,0.12)' },
+            }}
+          >
+            Support Our Mission
+          </Button>
+        </Stack>
+      </Box>
+
+      {/* Right image */}
+      <Box
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          width: '40%',
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: 2,
+        }}
+      >
         <Image
           src="/logo.png"
           alt="Bethel Rays of Hope Logo"
-          width={200}
-          height={200}
-          style={{ borderRadius: '50%', objectFit: 'cover' }}
+          fill
+          style={{ objectFit: 'cover' }}
+          priority
         />
-        <Chip
-          label="Bethel Rays of Hope - Kisumu, Kenya"
-          sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'common.white', fontWeight: 600 }}
-        />
-      </Stack>
-      <Typography variant="h2" sx={{ maxWidth: '16ch', mb: 2 }}>
-        Hope, care, and dignity for every child we serve.
-      </Typography>
-      <Typography variant="body1" sx={{ maxWidth: '65ch', opacity: 0.92 }}>
-        Bethel Rays of Hope is dedicated to supporting vulnerable children and families through
-        compassionate programs, trusted stewardship, and a strong community of supporters.
-      </Typography>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} mt={3.5}>
-        <Button
-          component={Link}
-          href="/public-transparency"
-          variant="contained"
-          endIcon={<ArrowForwardIcon />}
-          sx={{ fontWeight: 600, bgcolor: 'common.white', color: 'primary.main', '&:hover': { bgcolor: 'grey.100' } }}
-        >
-          View Public Updates
-        </Button>
-        <Button
-          component={Link}
-          href="/donate"
-          variant="outlined"
-          sx={{
-            fontWeight: 600,
-            color: 'common.white',
-            borderColor: 'rgba(255,255,255,0.75)',
-            '&:hover': { borderColor: 'common.white', bgcolor: 'rgba(255,255,255,0.12)' },
-          }}
-        >
-          Support Our Mission
-        </Button>
-      </Stack>
+      </Box>
     </Box>
   );
 }
@@ -87,7 +110,6 @@ export default function LandingPage() {
           background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 60%, #42a5f5 100%)',
           color: 'common.white',
           px: 2,
-          pr: 0,
           pt: 1,
           pb: { xs: 3, md: 4 },
         }}
