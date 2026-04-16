@@ -1,10 +1,41 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { Home as HomeIcon, VolunteerActivism as VolunteerActivismIcon } from '@mui/icons-material';
-import { Box, Button, Container, Divider, Paper, Stack, Typography } from '@mui/material';
+import { Home as HomeIcon, VolunteerActivism as VolunteerActivismIcon, Payment as PaymentIcon } from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  Container,
+  Divider,
+  Paper,
+  Stack,
+  Typography,
+  TextField,
+  Chip,
+  CircularProgress,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  InputAdornment,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
-const donationUrl = process.env.NEXT_PUBLIC_DONATION_URL;
+const PRESET_AMOUNTS = [100, 500, 1000, 2500, 5000];
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://financial-transparency-api.morgan-ent.workers.dev';
+
+interface DonationResponse {
+  donationId: string;
+  trackingId: string;
+  amount: number;
+  checkoutUrl: string;
+  status: string;
+}
 
 const supportItems = [
   {
@@ -22,6 +53,66 @@ const supportItems = [
 ];
 
 export default function DonatePage() {
+  const [amount, setAmount] = useState('');
+  const [donorName, setDonorName] = useState('');
+  const [donorEmail, setDonorEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [checkoutUrl, setCheckoutUrl] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handlePresetAmount = (preset: number) => {
+    setAmount(String(preset));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    const numericAmount = Number(amount);
+    if (!numericAmount || numericAmount < 10) {
+      setError('Minimum donation amount is KES 10');
+      return;
+    }
+
+    if (numericAmount > 1000000) {
+      setError('Maximum donation amount is KES 1,000,000');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/donations/initiate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: numericAmount,
+          donorName: donorName.trim() || undefined,
+          donorEmail: donorEmail.trim() || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error?.message || 'Failed to initiate donation');
+      }
+
+      const donationData = data.data as DonationResponse;
+      setCheckoutUrl(donationData.checkoutUrl);
+      setDialogOpen(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const copyCheckoutUrl = () => {
+    navigator.clipboard.writeText(checkoutUrl);
+  };
+
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <Box
@@ -61,32 +152,108 @@ export default function DonatePage() {
       </Box>
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
-        <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 2, border: 1, borderColor: 'divider' }}>
-          <Stack spacing={2.5}>
-            {supportItems.map((item) => (
-              <Box key={item.title}>
-                <Typography variant="h6" mb={0.5}>
-                  {item.title}
-                </Typography>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+          {/* Donation Form */}
+          <Paper elevation={0} sx={{ flex: 1, p: { xs: 2.5, md: 3.5 }, borderRadius: 2, border: 1, borderColor: 'divider' }}>
+            <Typography variant="h5" fontWeight={700} mb={3}>
+              Make a Donation
+            </Typography>
+
+            <form onSubmit={handleSubmit}>
+              <Stack spacing={2.5}>
+                {/* Preset amounts */}
+                <Box>
+                  <Typography variant="body2" color="text.secondary" mb={1}>
+                    Quick amounts
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {PRESET_AMOUNTS.map((preset) => (
+                      <Chip
+                        key={preset}
+                        label={`KES ${preset.toLocaleString()}`}
+                        onClick={() => handlePresetAmount(preset)}
+                        clickable
+                        variant={String(preset) === amount ? 'filled' : 'outlined'}
+                        color={String(preset) === amount ? 'primary' : 'default'}
+                      />
+                    ))}
+                  </Stack>
+                </Box>
+
+                {/* Custom amount */}
+                <TextField
+                  label="Amount (KES)"
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">KES</InputAdornment>,
+                  }}
+                  fullWidth
+                  required
+                />
+
+                <TextField
+                  label="Your Name (optional)"
+                  value={donorName}
+                  onChange={(e) => setDonorName(e.target.value)}
+                  fullWidth
+                />
+
+                <TextField
+                  label="Email (optional)"
+                  type="email"
+                  value={donorEmail}
+                  onChange={(e) => setDonorEmail(e.target.value)}
+                  fullWidth
+                />
+
+                {error && <Alert severity="error">{error}</Alert>}
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  startIcon={isSubmitting ? <CircularProgress size={20} /> : <PaymentIcon />}
+                  disabled={isSubmitting || !amount}
+                  fullWidth
+                >
+                  {isSubmitting ? 'Processing...' : 'Donate Now'}
+                </Button>
+              </Stack>
+            </form>
+          </Paper>
+
+          {/* Info Section */}
+          <Paper elevation={0} sx={{ flex: 1, p: { xs: 2.5, md: 3.5 }, borderRadius: 2, border: 1, borderColor: 'divider' }}>
+            <Stack spacing={2.5}>
+              {supportItems.map((item) => (
+                <Box key={item.title}>
+                  <Typography variant="h6" mb={0.5}>
+                    {item.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {item.description}
+                  </Typography>
+                </Box>
+              ))}
+              <Box sx={{ mt: 1, pt: 2, borderTop: 1, borderColor: 'divider' }}>
                 <Typography variant="body2" color="text.secondary">
-                  {item.description}
+                  Secure payments powered by IntaSend. Pay with M-Pesa, Visa, or Mastercard.
                 </Typography>
               </Box>
-            ))}
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} pt={1}>
-              <Button
-                component="a"
-                href={donationUrl || 'mailto:info@bethelraysofhope.org?subject=Donation%20Support'}
-                variant="contained"
-              >
-                {donationUrl ? 'Donate Securely' : 'Request Donation Link'}
-              </Button>
-              <Button component={Link} href="/public-transparency" variant="outlined">
-                View Public Updates
-              </Button>
             </Stack>
-          </Stack>
-        </Paper>
+            <Button
+              component={Link}
+              href="/public-transparency"
+              variant="outlined"
+              fullWidth
+              sx={{ mt: 2 }}
+            >
+              View Public Updates
+            </Button>
+          </Paper>
+        </Stack>
       </Container>
 
       <Divider />
@@ -102,6 +269,48 @@ export default function DonatePage() {
           </Paper>
         </Container>
       </Box>
+
+      {/* Checkout URL Dialog */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          Complete Your Donation
+          <IconButton onClick={() => setDialogOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="success" sx={{ mb: 2 }}>
+            Donation initiated! Complete your payment to support Bethel Rays of Hope.
+          </Alert>
+          <Typography variant="body2" color="text.secondary" mb={2}>
+            Click the button below or copy the link to open the secure payment page. You can pay with M-Pesa, Visa, or Mastercard.
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <TextField
+              value={checkoutUrl}
+              fullWidth
+              size="small"
+              InputProps={{ readOnly: true }}
+            />
+            <Button onClick={copyCheckoutUrl} startIcon={<ContentCopyIcon />} size="small">
+              Copy
+            </Button>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDialogOpen(false)}>Close</Button>
+          <Button
+            component="a"
+            href={checkoutUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="contained"
+            startIcon={<PaymentIcon />}
+          >
+            Open Payment Page
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

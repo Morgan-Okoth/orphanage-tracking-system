@@ -10,6 +10,7 @@ import auditHandlers from '../handlers/audit';
 import publicHandlers from '../handlers/public';
 import reportHandlers from '../handlers/reports';
 import archivalHandlers from '../handlers/archival';
+import donationHandlers from '../handlers/donations';
 import { authMiddleware, requireRole, requirePermission } from './middleware/auth';
 import { UserRole } from '../types';
 
@@ -296,3 +297,6 @@ router.route('/api/v1/public', publicHandlers);
 
 // Reporting routes (ADMIN_LEVEL_2 only)
 router.route('/api/v1/reports', reportHandlers);
+
+// Donation routes (public)
+router.route('/api/v1/donations', donationHandlers);

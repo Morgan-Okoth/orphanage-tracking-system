@@ -170,3 +170,22 @@ export const publicStatistics = sqliteTable('public_statistics', {
   amountsByType: text('amounts_by_type').notNull(), // JSON string
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
+
+// Donations table
+export const donations = sqliteTable('donations', {
+  id: text('id').primaryKey(),
+  intasendTrackingId: text('intasend_tracking_id').unique(),
+  requestReferenceId: text('request_reference_id').notNull().unique(),
+  amount: real('amount').notNull(),
+  currency: text('currency').default('KES').notNull(),
+  donorName: text('donor_name').notNull(),
+  donorEmail: text('donor_email'),
+  status: text('status').default('pending').notNull(),
+  initiatedAt: integer('initiated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+  completedAt: integer('completed_at', { mode: 'timestamp' }),
+  failureReason: text('failure_reason'),
+  metadata: text('metadata'), // JSON string
+}, (table) => ({
+  statusIdx: index('donations_status_idx').on(table.status),
+  initiatedAtIdx: index('donations_initiated_at_idx').on(table.initiatedAt),
+}));
