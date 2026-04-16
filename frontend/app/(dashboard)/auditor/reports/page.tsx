@@ -106,7 +106,7 @@ function ReportsContent() {
     queryFn: () => auditorApi.getAnomalies(),
   });
 
-  const anomalies = data?.data ?? [];
+  const anomalies = Array.isArray(data?.data) ? data.data : [];
 
   const high = anomalies.filter((a) => a.severity === 'HIGH');
   const medium = anomalies.filter((a) => a.severity === 'MEDIUM');
