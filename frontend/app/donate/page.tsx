@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Home as HomeIcon, VolunteerActivism as VolunteerActivismIcon, Payment as PaymentIcon } from '@mui/icons-material';
 import {
@@ -20,22 +20,36 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
-  InputAdornment,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
+
+declare global {
+  interface Window {
+    IntaSend: {
+      Inline: new (options: {
+        publicAPIKey: string;
+        callbackURL: string;
+        live: boolean;
+      }) => {
+        on: (event: string, handler: (data: any) => void) => void;
+        collect: (options: {
+          amount: number;
+          currency: string;
+          email?: string;
+          first_name?: string;
+          last_name?: string;
+          narrative?: string;
+        }) => void;
+      };
+    };
+  }
+}
 
 const PRESET_AMOUNTS = [100, 500, 1000, 2500, 5000];
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://financial-transparency-api.morgan-ent.workers.dev';
-
-interface DonationResponse {
-  donationId: string;
-  trackingId: string;
-  amount: number;
-  checkoutUrl: string;
-  status: string;
-}
+const INTASEND_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_INTASEND_PUBLISHABLE_KEY || '';
 
 const supportItems = [
   {
@@ -58,16 +72,76 @@ export default function DonatePage() {
   const [donorEmail, setDonorEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [checkoutUrl, setCheckoutUrl] = useState('');
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [sdkReady, setSdkReady] = useState(false);
+  const [sdkLoaded, setSdkLoaded] = useState(false);
+  const [paymentResult, setPaymentResult] = useState<{ success: boolean; message: string } | null>(null);
+  const intaSendRef = useRef<any>(null);
+
+  // Load IntaSend Inline SDK
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (window.IntaSend?.Inline) {
+      setSdkLoaded(true);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://sandbox.intasend.net/intsnd-collect/v1.0/intsnd-collect.js';
+    script.async = true;
+    script.onload = () => setSdkLoaded(true);
+    script.onerror = () => {
+      // Fallback to production CDN
+      const fallbackScript = document.createElement('script');
+      fallbackScript.src = 'https://collection.intasend.com/intsnd-collect/v1.0/intsnd-collect.js';
+      fallbackScript.async = true;
+      fallbackScript.onload = () => setSdkLoaded(true);
+      document.head.appendChild(fallbackScript);
+    };
+    document.head.appendChild(script);
+  }, []);
+
+  // Initialize IntaSend when SDK is loaded
+  useEffect(() => {
+    if (!sdkLoaded || typeof window === 'undefined' || !window.IntaSend?.Inline) return;
+
+    const isLive = process.env.NEXT_PUBLIC_INTASEND_ENV === 'live';
+
+    intaSendRef.current = new window.IntaSend.Inline({
+      publicAPIKey: INTASEND_PUBLISHABLE_KEY,
+      callbackURL: `${window.location.origin}/donate`,
+      live: isLive,
+    });
+
+    intaSendRef.current.on('COMPLETE', (response: any) => {
+      setIsSubmitting(false);
+      setPaymentResult({
+        success: true,
+        message: `Payment successful! Reference: ${response?.reference || 'Thank you for your donation!'}`,
+      });
+    });
+
+    intaSendRef.current.on('FAILED', (response: any) => {
+      setIsSubmitting(false);
+      setPaymentResult({
+        success: false,
+        message: response?.reason || 'Payment failed. Please try again.',
+      });
+    });
+
+    setSdkReady(true);
+  }, [sdkLoaded]);
 
   const handlePresetAmount = (preset: number) => {
     setAmount(String(preset));
+    setPaymentResult(null);
+    setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setPaymentResult(null);
 
     const numericAmount = Number(amount);
     if (!numericAmount || numericAmount < 10) {
@@ -80,38 +154,51 @@ export default function DonatePage() {
       return;
     }
 
+    if (!sdkReady || !intaSendRef.current) {
+      setError('Payment system is loading. Please wait a moment and try again.');
+      return;
+    }
+
+    if (!INTASEND_PUBLISHABLE_KEY) {
+      setError('Payment gateway is not configured. Please contact support.');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/donations/initiate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: numericAmount,
-          donorName: donorName.trim() || undefined,
-          donorEmail: donorEmail.trim() || undefined,
-        }),
-      });
+    const nameParts = donorName.trim().split(' ');
 
-      const data = await response.json();
+    intaSendRef.current.collect({
+      amount: numericAmount,
+      currency: 'KES',
+      email: donorEmail.trim() || undefined,
+      first_name: nameParts[0] || 'Supporter',
+      last_name: nameParts.slice(1).join(' ') || '',
+      narrative: 'Donation to Bethel Rays of Hope',
+    });
+  };
 
-      if (!data.success) {
-        throw new Error(data.error?.message || 'Failed to initiate donation');
-      }
-
-      const donationData = data.data as DonationResponse;
-      setCheckoutUrl(donationData.checkoutUrl);
-      setDialogOpen(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+  const handleCloseDialog = () => {
+    setPaymentResult(null);
+    if (paymentResult?.success) {
+      setAmount('');
+      setDonorName('');
+      setDonorEmail('');
     }
   };
 
-  const copyCheckoutUrl = () => {
-    navigator.clipboard.writeText(checkoutUrl);
-  };
+  if (!sdkLoaded) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Stack alignItems="center" spacing={2}>
+          <CircularProgress />
+          <Typography variant="body2" color="text.secondary">
+            Loading payment system...
+          </Typography>
+        </Stack>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -185,9 +272,10 @@ export default function DonatePage() {
                   label="Amount (KES)"
                   type="number"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">KES</InputAdornment>,
+                  onChange={(e) => {
+                    setAmount(e.target.value);
+                    setPaymentResult(null);
+                    setError('');
                   }}
                   fullWidth
                   required
@@ -215,11 +303,17 @@ export default function DonatePage() {
                   variant="contained"
                   size="large"
                   startIcon={isSubmitting ? <CircularProgress size={20} /> : <PaymentIcon />}
-                  disabled={isSubmitting || !amount}
+                  disabled={isSubmitting || !amount || !sdkReady}
                   fullWidth
                 >
-                  {isSubmitting ? 'Processing...' : 'Donate Now'}
+                  {isSubmitting ? 'Processing...' : !sdkReady ? 'Loading...' : 'Donate Now'}
                 </Button>
+
+                {!INTASEND_PUBLISHABLE_KEY && (
+                  <Alert severity="warning">
+                    Payment gateway not configured. Donations will not work in this environment.
+                  </Alert>
+                )}
               </Stack>
             </form>
           </Paper>
@@ -264,50 +358,35 @@ export default function DonatePage() {
               We are committed to responsible stewardship and dignified support for every child and family we serve.
             </Typography>
             <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-              © {new Date().getFullYear()} Bethel Rays of Hope NGO. All rights reserved.
+              &copy; {new Date().getFullYear()} Bethel Rays of Hope NGO. All rights reserved.
             </Typography>
           </Paper>
         </Container>
       </Box>
 
-      {/* Checkout URL Dialog */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
+      {/* Payment Result Dialog */}
+      <Dialog open={!!paymentResult} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          Complete Your Donation
-          <IconButton onClick={() => setDialogOpen(false)} size="small">
+          {paymentResult?.success ? 'Donation Successful' : 'Payment Failed'}
+          <IconButton onClick={handleCloseDialog} size="small">
             <CloseIcon />
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          <Alert severity="success" sx={{ mb: 2 }}>
-            Donation initiated! Complete your payment to support Bethel Rays of Hope.
-          </Alert>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Click the button below or copy the link to open the secure payment page. You can pay with M-Pesa, Visa, or Mastercard.
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-            <TextField
-              value={checkoutUrl}
-              fullWidth
-              size="small"
-              InputProps={{ readOnly: true }}
-            />
-            <Button onClick={copyCheckoutUrl} startIcon={<ContentCopyIcon />} size="small">
-              Copy
-            </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            {paymentResult?.success ? (
+              <CheckCircleIcon color="success" sx={{ fontSize: 48 }} />
+            ) : (
+              <ErrorIcon color="error" sx={{ fontSize: 48 }} />
+            )}
+            <Typography variant="body1">
+              {paymentResult?.message}
+            </Typography>
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setDialogOpen(false)}>Close</Button>
-          <Button
-            component="a"
-            href={checkoutUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="contained"
-            startIcon={<PaymentIcon />}
-          >
-            Open Payment Page
+          <Button onClick={handleCloseDialog} variant="contained">
+            {paymentResult?.success ? 'Thank You!' : 'Try Again'}
           </Button>
         </DialogActions>
       </Dialog>
