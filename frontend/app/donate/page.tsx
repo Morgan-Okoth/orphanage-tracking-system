@@ -85,13 +85,13 @@ export default function DonatePage() {
     }
 
     const script = document.createElement('script');
-    script.src = 'https://unpkg.com/@intasend/intasend-inline.js-sdk@latest/build/intasend-inline.js';
+    script.src = 'https://unpkg.com/intasend-inlinejs-sdk@latest/build/intasend-inline.js';
     script.async = true;
     script.onload = () => setSdkLoaded(true);
     script.onerror = () => {
-      // Fallback to older CDN
+      // Fallback to jsDelivr CDN
       const fallbackScript = document.createElement('script');
-      fallbackScript.src = 'https://cdn.jsdelivr.net/npm/@intasend/intasend-inline-js-sdk@latest/build/intasend-inline.js';
+      fallbackScript.src = 'https://cdn.jsdelivr.net/npm/intasend-inlinejs-sdk@latest/build/intasend-inline.js';
       fallbackScript.async = true;
       fallbackScript.onload = () => setSdkLoaded(true);
       document.head.appendChild(fallbackScript);
@@ -107,24 +107,33 @@ export default function DonatePage() {
 
     intaSendRef.current = new window.IntaSend({
       publicAPIKey: INTASEND_PUBLISHABLE_KEY,
-      callbackURL: `${window.location.origin}/donate`,
+      redirectURL: `${window.location.origin}/donate`,
       live: isLive,
     });
 
     intaSendRef.current.on('COMPLETE', (response: any) => {
+      console.log('Payment complete:', response);
       setIsSubmitting(false);
+      const trackingId = response?.tracking_id || response?.data?.tracking_id;
       setPaymentResult({
         success: true,
-        message: `Payment successful! Reference: ${response?.reference || 'Thank you for your donation!'}`,
+        message: trackingId
+          ? `Payment successful! Reference: ${trackingId}`
+          : 'Payment successful! Thank you for your donation.',
       });
     });
 
     intaSendRef.current.on('FAILED', (response: any) => {
+      console.log('Payment failed:', response);
       setIsSubmitting(false);
       setPaymentResult({
         success: false,
-        message: response?.reason || 'Payment failed. Please try again.',
+        message: response?.reason || response?.message || 'Payment failed. Please try again.',
       });
+    });
+
+    intaSendRef.current.on('IN-PROGRESS', () => {
+      console.log('Payment in progress...');
     });
 
     setSdkReady(true);
