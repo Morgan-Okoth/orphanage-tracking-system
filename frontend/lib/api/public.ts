@@ -1,5 +1,16 @@
 import { API_BASE_URL } from '../utils/constants';
 
+export class PublicApiError extends Error {
+  constructor(
+    public status: number,
+    public code: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'PublicApiError';
+  }
+}
+
 export interface PublicStatistics {
   totalReceived: number;
   totalDisbursed: number;
@@ -28,10 +39,14 @@ async function publicGet<T>(path: string): Promise<T> {
     headers: { 'Content-Type': 'application/json' },
     cache: 'no-store',
   });
+  const json = await res.json().catch(() => null);
   if (!res.ok) {
-    throw new Error(`Failed to fetch ${path}: ${res.status}`);
+    throw new PublicApiError(
+      res.status,
+      json?.error?.code ?? 'UNKNOWN_ERROR',
+      json?.error?.message ?? `Failed to fetch ${path}: ${res.status}`,
+    );
   }
-  const json = await res.json();
   return (json?.data ?? json) as T;
 }
 

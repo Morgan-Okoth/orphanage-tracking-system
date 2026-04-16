@@ -57,31 +57,31 @@ export const adminApi = {
     params.set('page', String(filters.page ?? 1));
     params.set('limit', String(filters.limit ?? 20));
     return apiClient.get<ApiResponse<PaginatedResponse<Request>>>(
-      `/admin/requests?${params.toString()}`,
+      `/requests?${params.toString()}`,
     );
   },
 
   getRequest: (id: string) =>
-    apiClient.get<ApiResponse<Request>>(`/admin/requests/${id}`),
+    apiClient.get<ApiResponse<Request>>(`/requests/${id}`),
 
   approveRequest: (id: string, comment?: string) =>
-    apiClient.post<ApiResponse<Request>>(`/admin/requests/${id}/approve`, { comment }),
+    apiClient.post<ApiResponse<Request>>(`/requests/${id}/approve`, { comment }),
 
   rejectRequest: (id: string, reason: string) =>
-    apiClient.post<ApiResponse<Request>>(`/admin/requests/${id}/reject`, { reason }),
+    apiClient.post<ApiResponse<Request>>(`/requests/${id}/reject`, { reason }),
 
   requestDocuments: (id: string, message: string) =>
-    apiClient.post<ApiResponse<Request>>(`/admin/requests/${id}/request-documents`, { message }),
+    apiClient.post<ApiResponse<Request>>(`/requests/${id}/request-docs`, { message }),
 
   startReview: (id: string) =>
-    apiClient.post<ApiResponse<Request>>(`/admin/requests/${id}/review`, {}),
+    apiClient.post<ApiResponse<Request>>(`/requests/${id}/review`, {}),
 
   getComments: (requestId: string) =>
-    apiClient.get<ApiResponse<Comment[]>>(`/admin/requests/${requestId}/comments`),
+    apiClient.get<ApiResponse<Comment[]>>(`/requests/${requestId}/comments`),
 
   addComment: (requestId: string, content: string, isInternal = false) =>
-    apiClient.post<ApiResponse<Comment>>(`/admin/requests/${requestId}/comments`, { content, isInternal }),
+    apiClient.post<ApiResponse<Comment>>(`/requests/${requestId}/comments`, { content, isInternal }),
 
   getRequestHistory: (id: string) =>
-    apiClient.get<ApiResponse<StatusChange[]>>(`/admin/requests/${id}/history`),
+    apiClient.get<ApiResponse<StatusChange[]>>(`/requests/${id}/history`),
 };

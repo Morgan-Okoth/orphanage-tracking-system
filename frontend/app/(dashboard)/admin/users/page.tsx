@@ -1,3 +1,5 @@
+'use client';
+
 import { Box, Typography, Divider, Button } from '@mui/material';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import Link from 'next/link';

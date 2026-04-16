@@ -24,7 +24,7 @@ import {
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
-import { publicApi, PublicStatistics, MonthlyStatistic } from '../../lib/api/public';
+import { publicApi, PublicApiError, PublicStatistics, MonthlyStatistic } from '../../lib/api/public';
 import StatisticsCard from './StatisticsCard';
 import FundingChart from './FundingChart';
 import LoadingSpinner from '../common/LoadingSpinner';
@@ -98,17 +98,31 @@ export default function PublicDashboard() {
   const {
     data: monthly,
     isLoading: monthlyLoading,
+    error: monthlyError,
   } = useQuery<MonthlyStatistic[]>({
     queryKey: ['public', 'statistics', 'monthly'],
     queryFn: publicApi.getMonthlyStatistics,
   });
 
+  const noStatisticsYet =
+    statsError instanceof PublicApiError &&
+    statsError.status === 404 &&
+    statsError.code === 'NOT_FOUND';
+
   if (statsLoading) return <LoadingSpinner />;
 
-  if (statsError) {
+  if (statsError && !noStatisticsYet) {
     return (
       <Alert severity="error" sx={{ m: 2 }}>
         Failed to load transparency data. Please try again later.
+      </Alert>
+    );
+  }
+
+  if (noStatisticsYet) {
+    return (
+      <Alert severity="info" sx={{ m: 2 }}>
+        Transparency statistics will appear here once published data is available.
       </Alert>
     );
   }
@@ -167,6 +181,8 @@ export default function PublicDashboard() {
                 </Typography>
                 {monthlyLoading ? (
                   <LoadingSpinner />
+                ) : monthlyError ? (
+                  <Typography color="text.secondary">Monthly trend data is currently unavailable.</Typography>
                 ) : (
                   <FundingChart data={monthly ?? []} />
                 )}

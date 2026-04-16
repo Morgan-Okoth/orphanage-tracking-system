@@ -12,6 +12,14 @@ Next.js App Router frontend for the Financial Transparency and Accountability Sy
 - React Hook Form + Zod
 - Vitest + Testing Library
 
+## Frontend Architecture
+
+- `app/` route entrypoints and layouts
+- `components/marketing/` presentation-ready landing page sections
+- `components/auth/`, `components/admin/`, `components/requests/` domain UI modules
+- `lib/api/` typed API clients grouped by role/domain
+- `theme/muiTheme.ts` shared MUI theme tokens and component defaults
+
 ## Local Development
 
 ```bash
@@ -49,3 +57,11 @@ NEXT_PUBLIC_DONATION_URL=
 - Request submission uses multipart form data because the worker requires request details and supporting documents in the same submission.
 - Public registration is beneficiary-only. Internal staff and auditor roles are provisioned by governance, not self-selected on the public form.
 - Dashboard and request screens assume the Cloudflare Workers API contract defined in `../workers/api/router.ts`.
+
+## Deployment
+
+Deployment instructions are documented in `DEPLOYMENT.md`:
+
+- Vercel (recommended)
+- Docker/container deployment
+- Release validation checklist

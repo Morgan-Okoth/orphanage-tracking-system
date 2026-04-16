@@ -176,7 +176,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         )}
 
         <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <AppBar position="static" color="default" elevation={1}>
+          <AppBar
+            position="static"
+            elevation={0}
+            sx={{
+              background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 60%, #42a5f5 100%)',
+              color: 'common.white',
+            }}
+          >
             <Toolbar>
               {isMobile && (
                 <IconButton
@@ -195,7 +202,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Toolbar>
           </AppBar>
           <Box
-            sx={{ p: { xs: 2, sm: 3 }, flex: 1 }}
+            sx={{
+              p: { xs: 2, sm: 3 },
+              flex: 1,
+              bgcolor: '#f6f9ff',
+              backgroundImage:
+                'radial-gradient(circle at 10% 5%, rgba(25,118,210,0.08) 0%, rgba(25,118,210,0) 30%)',
+            }}
             role="main"
             aria-label="Main content"
           >
