@@ -102,7 +102,7 @@ export default function RequestForm() {
         />
 
         <TextField
-          label="Amount (USD)"
+          label="Amount (KES)"
           type="number"
           inputProps={{ min: 0, step: '0.01' }}
           {...register('amount')}
