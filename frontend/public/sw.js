@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fts-v1';
+const CACHE_NAME = 'fts-v2';
 const STATIC_ASSETS = [
   '/',
   '/public-transparency',
@@ -23,7 +23,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch: network-first for API, cache-first for static assets
+// Fetch: network-first for pages, bypass service worker for Next.js static assets
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -34,18 +34,9 @@ self.addEventListener('fetch', (event) => {
   // API calls: network-only (never cache)
   if (url.pathname.startsWith('/api/')) return;
 
-  // Next.js static assets: cache-first
-  if (url.pathname.startsWith('/_next/static/')) {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached;
-        return fetch(request).then((res) => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          return res;
-        });
-      })
-    );
+  // Next.js static assets (chunks, CSS, images): let browser handle natively
+  // These have hash-based filenames that change on every build, so caching causes 404s
+  if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/_next/data/')) {
     return;
   }
 
@@ -71,7 +62,6 @@ self.addEventListener('sync', (event) => {
 });
 
 async function syncPendingRequests() {
-  // Handled by the client-side IndexedDB sync logic
   const clients = await self.clients.matchAll();
   clients.forEach((client) => client.postMessage({ type: 'SYNC_REQUESTS' }));
 }
