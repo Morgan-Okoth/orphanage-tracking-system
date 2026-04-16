@@ -35,9 +35,9 @@ function HeroSection() {
         <Image
           src="/logo.png"
           alt="Bethel Rays of Hope Logo"
-          width={80}
-          height={80}
-          style={{ borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(255,255,255,0.3)' }}
+          width={200}
+          height={200}
+          style={{ borderRadius: '50%', objectFit: 'cover' }}
         />
         <Chip
           label="Bethel Rays of Hope - Kisumu, Kenya"
@@ -87,6 +87,7 @@ export default function LandingPage() {
           background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 60%, #42a5f5 100%)',
           color: 'common.white',
           px: 2,
+          pr: 0,
           pt: 1,
           pb: { xs: 3, md: 4 },
         }}
