@@ -133,7 +133,7 @@ export default function AdminRequestDetailPage({ params }: Props) {
                 <strong>Flag reason:</strong> {req.flagReason}
               </Alert>
             )}
-            {req.disputeReason && (
+            {(req.status === RequestStatus.DISPUTED || req.status === RequestStatus.RESOLVED) && req.disputeReason && (
               <Alert severity="error" sx={{ mb: 2 }}>
                 <Typography variant="subtitle2" gutterBottom>
                   Payment Dispute Raised

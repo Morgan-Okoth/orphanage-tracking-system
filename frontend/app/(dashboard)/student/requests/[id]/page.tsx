@@ -104,7 +104,7 @@ export default function RequestDetailPage({ params }: Props) {
             <strong>Flag reason:</strong> {req.flagReason}
           </Alert>
         )}
-        {req.disputeReason && (
+        {(req.status === RequestStatus.DISPUTED || req.status === RequestStatus.RESOLVED) && req.disputeReason && (
           <Alert severity="error" sx={{ mb: 2 }}>
             <strong>Dispute reason:</strong> {req.disputeReason}
             {req.disputeResolution && (
