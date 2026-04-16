@@ -97,7 +97,7 @@ export default function CommentThread({ requestId, allowInternal = true }: Props
     },
   });
 
-  const comments = data?.data ?? [];
+  const comments = Array.isArray(data?.data) ? data.data : [];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

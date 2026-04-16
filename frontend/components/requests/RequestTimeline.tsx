@@ -55,7 +55,7 @@ export default function RequestTimeline({ requestId }: Props) {
     queryFn: () => adminApi.getRequestHistory(requestId),
   });
 
-  const history = data?.data ?? [];
+  const history = Array.isArray(data?.data) ? data.data : [];
 
   if (isLoading) return <CircularProgress size={20} />;
   if (isError) return <Alert severity="error">Failed to load history.</Alert>;

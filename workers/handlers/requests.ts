@@ -507,7 +507,7 @@ async function getRequestHistory(c: Context): Promise<Response> {
     return c.json<ApiResponse>(
       {
         success: true,
-        data: { history },
+        data: history,
       },
       200
     );
@@ -1103,7 +1103,7 @@ async function getComments(c: Context): Promise<Response> {
     return c.json<ApiResponse>(
       {
         success: true,
-        data: { comments },
+        data: comments,
       },
       200
     );

@@ -81,7 +81,7 @@ export default function DocumentViewer({ requestId }: Props) {
     queryFn: () => documentsApi.list(requestId),
   });
 
-  const docs = (data?.data ?? []).filter((d) => !d.isDeleted);
+  const docs = (Array.isArray(data?.data) ? data.data : []).filter((d) => !d.isDeleted);
 
   if (isLoading) return <CircularProgress size={20} />;
   if (isError) return <Alert severity="error">Failed to load documents.</Alert>;

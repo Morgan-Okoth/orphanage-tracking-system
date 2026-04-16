@@ -400,18 +400,15 @@ async function listRequestDocuments(c: Context): Promise<Response> {
 
     return c.json<ApiResponse>({
       success: true,
-      data: {
-        requestId,
-        documents: documents.map(doc => ({
-          id: doc.id,
-          fileName: doc.fileName,
-          fileType: doc.fileType,
-          fileSize: doc.fileSize,
-          version: doc.version,
-          uploadedAt: doc.uploadedAt,
-          scanStatus: doc.scanStatus,
-        })),
-      },
+      data: documents.map(doc => ({
+        id: doc.id,
+        fileName: doc.fileName,
+        fileType: doc.fileType,
+        fileSize: doc.fileSize,
+        version: doc.version,
+        uploadedAt: doc.uploadedAt,
+        scanStatus: doc.scanStatus,
+      })),
     });
   } catch (error) {
     console.error('Error listing request documents:', error);
