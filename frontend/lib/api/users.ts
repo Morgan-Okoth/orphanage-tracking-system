@@ -9,6 +9,15 @@ export interface UserFilters {
   limit?: number;
 }
 
+export interface CreateUserData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  role?: UserRole;
+}
+
 export const usersApi = {
   listUsers: (filters: UserFilters = {}) => {
     const params = new URLSearchParams();
@@ -20,6 +29,9 @@ export const usersApi = {
       `/users?${params.toString()}`,
     );
   },
+
+  createUser: (data: CreateUserData) =>
+    apiClient.post<ApiResponse<User>>('/users', data),
 
   getPendingUsers: () =>
     apiClient.get<ApiResponse<User[]>>('/users/pending'),

@@ -4,6 +4,17 @@ import { UserRole, AccountStatus, AuditAction } from '../types';
 import { getDb } from '../db/client';
 import { auditLog } from './auditService';
 import { Context } from 'hono';
+import bcrypt from 'bcryptjs';
+import { randomUUID } from 'crypto';
+
+export interface CreateUserData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  role?: UserRole;
+}
 
 export interface UpdateUserData {
   firstName?: string;
@@ -117,6 +128,78 @@ export class UserService {
 
     // Remove password hashes
     return pendingUsers.map(({ passwordHash, ...user }) => user);
+  }
+
+  /**
+   * Create a new user (admin only - creates user with ACTIVE status)
+   */
+  async createUser(
+    db: D1Database,
+    data: CreateUserData,
+    createdById: string,
+    c: Context
+  ) {
+    const dbClient = getDb(db);
+
+    // Check if email already exists
+    const emailExists = await dbClient
+      .select()
+      .from(users)
+      .where(eq(users.email, data.email.toLowerCase()))
+      .get();
+
+    if (emailExists) {
+      throw new Error('EMAIL_ALREADY_EXISTS');
+    }
+
+    // Check if phone already exists
+    const phoneExists = await dbClient
+      .select()
+      .from(users)
+      .where(eq(users.phone, data.phone))
+      .get();
+
+    if (phoneExists) {
+      throw new Error('PHONE_ALREADY_EXISTS');
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(data.password, 12);
+
+    // Create user with ACTIVE status (admin-created users are pre-approved)
+    const userId = randomUUID();
+    await dbClient.insert(users).values({
+      id: userId,
+      email: data.email.toLowerCase(),
+      phone: data.phone,
+      passwordHash,
+      role: data.role || UserRole.STUDENT,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      accountStatus: AccountStatus.ACTIVE,
+      isEmailVerified: false,
+      isPhoneVerified: false,
+      approvedById: createdById,
+    });
+
+    // Log audit event
+    await auditLog(
+      createdById,
+      AuditAction.USER_CREATED,
+      'User',
+      userId,
+      {
+        createdUserId: userId,
+        createdUserEmail: data.email,
+        createdUserRole: data.role || UserRole.STUDENT,
+      },
+      c
+    );
+
+    // Get created user
+    const newUser = await this.getUserById(db, userId);
+
+    return newUser;
   }
 
   /**

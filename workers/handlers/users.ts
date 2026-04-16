@@ -1,11 +1,21 @@
 import { Context } from 'hono';
 import { z } from 'zod';
-import { UserService } from '../services/userService';
+import { UserService, CreateUserData } from '../services/userService';
 import { NotificationService } from '../services/notificationService';
 import { UserRole, AccountStatus, ApiResponse } from '../types';
 import { getCurrentUser } from '../api/middleware/auth';
 import { updateUserSchema, rejectUserSchema } from '../utils/schemas';
 import { sanitizeText } from '../utils/validation';
+
+// Schema for creating user
+const createUserSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  phone: z.string().min(10, 'Phone number is required'),
+  role: z.nativeEnum(UserRole).optional(),
+});
 
 /**
  * GET /api/v1/users
@@ -76,6 +86,97 @@ export async function listPendingUsers(c: Context): Promise<Response> {
         error: {
           code: 'LIST_PENDING_USERS_FAILED',
           message: 'Failed to list pending users',
+        },
+      },
+      500
+    );
+  }
+}
+
+/**
+ * POST /api/v1/users
+ * Create a new user (admin only - creates user with ACTIVE status)
+ */
+export async function createUser(c: Context): Promise<Response> {
+  try {
+    const currentUser = getCurrentUser(c);
+    const body = await c.req.json();
+    const validatedData = createUserSchema.parse(body);
+
+    const userService = new UserService();
+
+    const newUser = await userService.createUser(
+      c.env.DB,
+      {
+        email: validatedData.email,
+        password: validatedData.password,
+        firstName: sanitizeText(validatedData.firstName, 100),
+        lastName: sanitizeText(validatedData.lastName, 100),
+        phone: validatedData.phone,
+        role: validatedData.role,
+      },
+      currentUser.userId,
+      c
+    );
+
+    return c.json<ApiResponse>(
+      {
+        success: true,
+        message: 'User created successfully',
+        data: newUser,
+      },
+      201
+    );
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return c.json<ApiResponse>(
+        {
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid input data',
+            details: error.errors,
+          },
+        },
+        400
+      );
+    }
+
+    if (error instanceof Error) {
+      if (error.message === 'EMAIL_ALREADY_EXISTS') {
+        return c.json<ApiResponse>(
+          {
+            success: false,
+            error: {
+              code: 'EMAIL_ALREADY_EXISTS',
+              message: 'A user with this email already exists',
+            },
+          },
+          409
+        );
+      }
+
+      if (error.message === 'PHONE_ALREADY_EXISTS') {
+        return c.json<ApiResponse>(
+          {
+            success: false,
+            error: {
+              code: 'PHONE_ALREADY_EXISTS',
+              message: 'A user with this phone number already exists',
+            },
+          },
+          409
+        );
+      }
+    }
+
+    console.error('Create user error:', error);
+    return c.json<ApiResponse>(
+      {
+        success: false,
+        error: {
+          code: 'CREATE_USER_FAILED',
+          message: 'Failed to create user',
         },
       },
       500
@@ -611,6 +712,7 @@ export async function reactivateUser(c: Context): Promise<Response> {
 export const userHandlers = {
   listUsers,
   listPendingUsers,
+  createUser,
   getUserById,
   updateUser,
   approveUser,

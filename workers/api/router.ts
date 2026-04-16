@@ -37,6 +37,13 @@ router.get(
   userHandlers.listUsers
 );
 
+router.post(
+  '/api/v1/users',
+  authMiddleware(),
+  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.SUPERADMIN),
+  userHandlers.createUser
+);
+
 router.get(
   '/api/v1/users/pending',
   authMiddleware(),
