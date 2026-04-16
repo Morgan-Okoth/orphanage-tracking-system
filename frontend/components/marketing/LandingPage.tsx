@@ -26,87 +26,55 @@ function HeroSection() {
   return (
     <Box
       sx={{
-        display: 'flex',
-        alignItems: 'stretch',
-        minHeight: { xs: 'auto', md: '400px' },
+        px: { xs: 0, md: 0 },
+        py: { xs: 3, md: 5 },
+        color: 'common.white',
       }}
     >
-      {/* Left content */}
-      <Box
-        sx={{
-          flex: 1,
-          py: { xs: 3, md: 5 },
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-        }}
-      >
-        <Stack direction="row" spacing={2} alignItems="center" mb={2}>
-          <Chip
-            label="Bethel Rays of Hope - Kisumu, Kenya"
-            sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'common.white', fontWeight: 600 }}
-          />
-        </Stack>
-        <Typography variant="h2" sx={{ maxWidth: '16ch', mb: 2 }}>
-          Hope, care, and dignity for every child we serve.
-        </Typography>
-        <Typography variant="body1" sx={{ maxWidth: '65ch', opacity: 0.92 }}>
-          Bethel Rays of Hope is dedicated to supporting vulnerable children and families through
-          compassionate programs, trusted stewardship, and a strong community of supporters.
-        </Typography>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} mt={3.5}>
-          <Button
-            component={Link}
-            href="/public-transparency"
-            variant="contained"
-            endIcon={<ArrowForwardIcon />}
-            sx={{ fontWeight: 600, bgcolor: 'common.white', color: 'primary.main', '&:hover': { bgcolor: 'grey.100' } }}
-          >
-            View Public Updates
-          </Button>
-          <Button
-            component={Link}
-            href="/donate"
-            variant="outlined"
-            sx={{
-              fontWeight: 600,
-              color: 'common.white',
-              borderColor: 'rgba(255,255,255,0.75)',
-              '&:hover': { borderColor: 'common.white', bgcolor: 'rgba(255,255,255,0.12)' },
-            }}
-          >
-            Support Our Mission
-          </Button>
-        </Stack>
-      </Box>
-
-      {/* Right image */}
-      <Box
-        sx={{
-          display: { xs: 'none', md: 'block' },
-          width: '50%',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <Box
+      <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+        <Image
+          src="/logo.png"
+          alt="Bethel Rays of Hope Logo"
+          width={200}
+          height={200}
+          style={{ borderRadius: '50%', objectFit: 'cover' }}
+        />
+        <Chip
+          label="Bethel Rays of Hope - Kisumu, Kenya"
+          sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'common.white', fontWeight: 600 }}
+        />
+      </Stack>
+      <Typography variant="h2" sx={{ maxWidth: '16ch', mb: 2 }}>
+        Hope, care, and dignity for every child we serve.
+      </Typography>
+      <Typography variant="body1" sx={{ maxWidth: '65ch', opacity: 0.92 }}>
+        Bethel Rays of Hope is dedicated to supporting vulnerable children and families through
+        compassionate programs, trusted stewardship, and a strong community of supporters.
+      </Typography>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} mt={3.5}>
+        <Button
+          component={Link}
+          href="/public-transparency"
+          variant="contained"
+          endIcon={<ArrowForwardIcon />}
+          sx={{ fontWeight: 600, bgcolor: 'common.white', color: 'primary.main', '&:hover': { bgcolor: 'grey.100' } }}
+        >
+          View Public Updates
+        </Button>
+        <Button
+          component={Link}
+          href="/donate"
+          variant="outlined"
           sx={{
-            position: 'relative',
-            width: '100%',
-            minHeight: '500px',
-            clipPath: 'circle(70% at 25% 50%)',
-            bgcolor: 'transparent',
+            fontWeight: 600,
+            color: 'common.white',
+            borderColor: 'rgba(255,255,255,0.75)',
+            '&:hover': { borderColor: 'common.white', bgcolor: 'rgba(255,255,255,0.12)' },
           }}
         >
-          <Image
-            src="/logo.png"
-            alt="Bethel Rays of Hope Logo"
-            fill
-            style={{ objectFit: 'cover' }}
-            priority
-          />
-        </Box>
-      </Box>
+          Support Our Mission
+        </Button>
+      </Stack>
     </Box>
   );
 }
@@ -118,13 +86,12 @@ export default function LandingPage() {
         sx={{
           background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 60%, #42a5f5 100%)',
           color: 'common.white',
-          px: 0,
+          px: 2,
           pt: 1,
           pb: { xs: 3, md: 4 },
-          overflow: 'hidden',
         }}
       >
-        <Container maxWidth="lg" sx={{ pl: { md: 3 } }}>
+        <Container maxWidth="lg">
           <AppBar position="static" color="transparent" elevation={0}>
             <Toolbar disableGutters sx={{ py: 0.5 }}>
               <Stack direction="row" spacing={1.5} alignItems="center" flexGrow={1}>
