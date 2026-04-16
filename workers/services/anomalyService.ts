@@ -72,28 +72,19 @@ export async function detectAmountOutliers(db: D1Database): Promise<AnomalyResul
   const anomalies: AnomalyResult[] = [];
 
   for (const requestType of REQUEST_TYPES) {
-    // Compute mean and population standard deviation for this type
-    const statsRow = await orm
-      .select({
-        mean: avg(requests.amount),
-        stddev: sql<number>`sqrt(avg((${requests.amount} - (select avg(amount) from requests where type = ${requestType})) * (${requests.amount} - (select avg(amount) from requests where type = ${requestType}))))`,
-      })
+    // Compute mean for this type
+    const meanRow = await orm
+      .select({ mean: avg(requests.amount) })
       .from(requests)
       .where(eq(requests.type, requestType))
       .get();
 
-    if (!statsRow || statsRow.mean === null) continue;
+    if (!meanRow || meanRow.mean === null) continue;
 
-    const mean = Number(statsRow.mean);
-    const stddev = Number(statsRow.stddev ?? 0);
+    const mean = Number(meanRow.mean);
 
-    // Skip if no variance — all amounts are identical, no outliers possible
-    if (stddev === 0) continue;
-
-    const threshold = mean + 3 * stddev;
-
-    // Fetch all requests of this type that exceed the threshold
-    const outliers = await orm
+    // Fetch all requests of this type
+    const typeRequests = await orm
       .select({
         id: requests.id,
         studentId: requests.studentId,
@@ -102,13 +93,25 @@ export async function detectAmountOutliers(db: D1Database): Promise<AnomalyResul
       .from(requests)
       .where(eq(requests.type, requestType));
 
-    for (const outlier of outliers) {
-      if (outlier.amount >= threshold) {
+    if (typeRequests.length === 0) continue;
+
+    // Calculate standard deviation manually
+    const variance = typeRequests.reduce((sum, r) => sum + Math.pow(r.amount - mean, 2), 0) / typeRequests.length;
+    const stddev = Math.sqrt(variance);
+
+    // Skip if no variance — all amounts are identical, no outliers possible
+    if (stddev === 0) continue;
+
+    const threshold = mean + 3 * stddev;
+
+    // Find outliers
+    for (const req of typeRequests) {
+      if (req.amount >= threshold) {
         anomalies.push({
           type: 'AMOUNT_OUTLIER',
-          requestId: outlier.id,
-          studentId: outlier.studentId,
-          description: `Request amount ${outlier.amount} is more than 3 standard deviations above the mean (${mean.toFixed(2)}) for type ${requestType}`,
+          requestId: req.id,
+          studentId: req.studentId,
+          description: `Request amount ${req.amount} is more than 3 standard deviations above the mean (${mean.toFixed(2)}) for type ${requestType}`,
           severity: 'high',
           detectedAt,
         });
