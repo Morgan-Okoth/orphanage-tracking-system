@@ -102,7 +102,16 @@ export default function AdminRequestDetailPage({ params }: Props) {
             </Stack>
 
             <Typography variant="caption" color="text.secondary">
-              Submitted {format(new Date(req.submittedAt), 'MMM d, yyyy HH:mm')}
+              Submitted {(() => {
+                try {
+                  if (!req.submittedAt) return 'N/A';
+                  const date = new Date(req.submittedAt);
+                  if (isNaN(date.getTime())) return 'Invalid date';
+                  return format(date, 'MMM d, yyyy HH:mm');
+                } catch {
+                  return 'Invalid date';
+                }
+              })()}
             </Typography>
 
             <Divider sx={{ my: 2 }} />
@@ -134,7 +143,15 @@ export default function AdminRequestDetailPage({ params }: Props) {
                 </Typography>
                 {req.disputeRaisedAt && (
                   <Typography variant="body2">
-                    <strong>Raised:</strong> {format(new Date(req.disputeRaisedAt), 'MMM d, yyyy HH:mm')}
+                    <strong>Raised:</strong> {(() => {
+                      try {
+                        const date = new Date(req.disputeRaisedAt);
+                        if (isNaN(date.getTime())) return 'Invalid date';
+                        return format(date, 'MMM d, yyyy HH:mm');
+                      } catch {
+                        return 'Invalid date';
+                      }
+                    })()}
                   </Typography>
                 )}
                 {req.disputeResolution && (
@@ -199,7 +216,15 @@ export default function AdminRequestDetailPage({ params }: Props) {
                     {payment.completedAt && (
                       <Typography variant="body2">
                         <strong>Date:</strong>{' '}
-                        {format(new Date(payment.completedAt), 'MMM d, yyyy HH:mm')}
+                        {(() => {
+                          try {
+                            const date = new Date(payment.completedAt);
+                            if (isNaN(date.getTime())) return 'Invalid date';
+                            return format(date, 'MMM d, yyyy HH:mm');
+                          } catch {
+                            return 'Invalid date';
+                          }
+                        })()}
                       </Typography>
                     )}
                   </Stack>

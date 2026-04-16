@@ -36,7 +36,16 @@ function TimelineEntry({ entry, isLast }: { entry: StatusChange; isLast: boolean
             by {entry.changedByName}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            · {format(new Date(entry.changedAt), 'MMM d, yyyy HH:mm')}
+            · {(() => {
+              try {
+                if (!entry.changedAt) return 'N/A';
+                const date = new Date(entry.changedAt);
+                if (isNaN(date.getTime())) return 'Invalid date';
+                return format(date, 'MMM d, yyyy HH:mm');
+              } catch {
+                return 'Invalid date';
+              }
+            })()}
           </Typography>
         </Stack>
         {entry.reason && (

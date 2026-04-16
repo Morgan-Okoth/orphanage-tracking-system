@@ -66,7 +66,16 @@ function CommentItem({ comment }: { comment: Comment }) {
               />
             )}
             <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>
-              {format(new Date(comment.createdAt), 'MMM d, yyyy HH:mm')}
+              {(() => {
+                try {
+                  if (!comment.createdAt) return 'N/A';
+                  const date = new Date(comment.createdAt);
+                  if (isNaN(date.getTime())) return 'Invalid date';
+                  return format(date, 'MMM d, yyyy HH:mm');
+                } catch {
+                  return 'Invalid date';
+                }
+              })()}
             </Typography>
           </Stack>
           <Typography variant="body2" sx={{ mt: 0.5 }}>

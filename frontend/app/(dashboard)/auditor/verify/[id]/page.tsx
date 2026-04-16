@@ -116,7 +116,16 @@ function VerificationDetailContent({ id }: { id: string }) {
             </Stack>
 
             <Typography variant="caption" color="text.secondary">
-              Submitted {format(new Date(req.submittedAt), 'MMM d, yyyy HH:mm')}
+              Submitted {(() => {
+                try {
+                  if (!req.submittedAt) return 'N/A';
+                  const date = new Date(req.submittedAt);
+                  if (isNaN(date.getTime())) return 'Invalid date';
+                  return format(date, 'MMM d, yyyy HH:mm');
+                } catch {
+                  return 'Invalid date';
+                }
+              })()}
             </Typography>
 
             <Divider sx={{ my: 2 }} />

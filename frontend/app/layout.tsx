@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   title: 'Financial Transparency System | Bethel Rays of Hope',
   description: 'Bethel Rays of Hope NGO - Financial Transparency and Accountability',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/logo-favicon.png',
+    apple: '/logo-favicon.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',

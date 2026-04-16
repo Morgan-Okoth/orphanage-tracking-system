@@ -173,7 +173,16 @@ export default function AuditLogViewer() {
                   <TableRow key={log.id} hover>
                     <TableCell>
                       <Typography variant="caption">
-                        {format(new Date(log.createdAt), 'MMM d, yyyy HH:mm:ss')}
+                        {(() => {
+                          try {
+                            if (!log.createdAt) return 'N/A';
+                            const date = new Date(log.createdAt);
+                            if (isNaN(date.getTime())) return 'Invalid date';
+                            return format(date, 'MMM d, yyyy HH:mm:ss');
+                          } catch {
+                            return 'Invalid date';
+                          }
+                        })()}
                       </Typography>
                     </TableCell>
                     <TableCell>

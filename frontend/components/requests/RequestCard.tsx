@@ -40,7 +40,16 @@ export default function RequestCard({ request, onClick }: Props) {
             </Box>
           </Stack>
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-            Submitted {format(new Date(request.submittedAt), 'MMM d, yyyy')}
+            Submitted {(() => {
+              try {
+                if (!request.submittedAt) return 'N/A';
+                const date = new Date(request.submittedAt);
+                if (isNaN(date.getTime())) return 'Invalid date';
+                return format(date, 'MMM d, yyyy');
+              } catch {
+                return 'Invalid date';
+              }
+            })()}
           </Typography>
         </CardContent>
       </CardActionArea>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   AppBar,
   Box,
@@ -14,7 +15,6 @@ import {
   Typography,
 } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import ArchitectureIcon from '@mui/icons-material/Architecture';
 import {
   landingFeatures,
   landingMetrics,
@@ -31,10 +31,19 @@ function HeroSection() {
         color: 'common.white',
       }}
     >
-      <Chip
-        label="Bethel Rays of Hope"
-        sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'common.white', mb: 2, fontWeight: 600 }}
-      />
+      <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+        <Image
+          src="/logo.png"
+          alt="Bethel Rays of Hope Logo"
+          width={80}
+          height={80}
+          style={{ borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(255,255,255,0.3)' }}
+        />
+        <Chip
+          label="Bethel Rays of Hope - Kisumu, Kenya"
+          sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'common.white', fontWeight: 600 }}
+        />
+      </Stack>
       <Typography variant="h2" sx={{ maxWidth: '16ch', mb: 2 }}>
         Hope, care, and dignity for every child we serve.
       </Typography>
@@ -85,8 +94,14 @@ export default function LandingPage() {
         <Container maxWidth="lg">
           <AppBar position="static" color="transparent" elevation={0}>
             <Toolbar disableGutters sx={{ py: 0.5 }}>
-              <Stack direction="row" spacing={1} alignItems="center" flexGrow={1}>
-                <ArchitectureIcon sx={{ color: 'common.white' }} />
+              <Stack direction="row" spacing={1.5} alignItems="center" flexGrow={1}>
+                <Image
+                  src="/logo.png"
+                  alt="Bethel Rays of Hope Logo"
+                  width={40}
+                  height={40}
+                  style={{ borderRadius: '50%', objectFit: 'cover' }}
+                />
                 <Typography variant="subtitle1" fontWeight={700} color="inherit">
                   Bethel Rays of Hope
                 </Typography>

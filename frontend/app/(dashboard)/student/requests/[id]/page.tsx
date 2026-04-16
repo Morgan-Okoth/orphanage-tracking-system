@@ -121,7 +121,16 @@ export default function RequestDetailPage({ params }: Props) {
             <ListItem key={label} disableGutters>
               <ListItemText
                 primary={label}
-                secondary={format(new Date(date), 'MMM d, yyyy HH:mm')}
+                secondary={(() => {
+                  try {
+                    if (!date) return 'N/A';
+                    const d = new Date(date);
+                    if (isNaN(d.getTime())) return 'Invalid date';
+                    return format(d, 'MMM d, yyyy HH:mm');
+                  } catch {
+                    return 'Invalid date';
+                  }
+                })()}
               />
             </ListItem>
           ))}

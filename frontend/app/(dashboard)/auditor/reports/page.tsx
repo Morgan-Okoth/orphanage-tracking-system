@@ -75,7 +75,16 @@ function AnomalyCard({ anomaly }: { anomaly: Anomaly }) {
 
         <Stack direction="row" spacing={2} alignItems="center">
           <Typography variant="caption" color="text.secondary">
-            Detected {format(new Date(anomaly.detectedAt), 'MMM d, yyyy HH:mm')}
+            Detected {(() => {
+              try {
+                if (!anomaly.detectedAt) return 'N/A';
+                const date = new Date(anomaly.detectedAt);
+                if (isNaN(date.getTime())) return 'Invalid date';
+                return format(date, 'MMM d, yyyy HH:mm');
+              } catch {
+                return 'Invalid date';
+              }
+            })()}
           </Typography>
           {anomaly.affectedRequestId && (
             <Chip
