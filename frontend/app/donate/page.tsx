@@ -27,22 +27,20 @@ import ErrorIcon from '@mui/icons-material/Error';
 
 declare global {
   interface Window {
-    IntaSend: {
-      Inline: new (options: {
-        publicAPIKey: string;
-        callbackURL: string;
-        live: boolean;
-      }) => {
-        on: (event: string, handler: (data: any) => void) => void;
-        collect: (options: {
-          amount: number;
-          currency: string;
-          email?: string;
-          first_name?: string;
-          last_name?: string;
-          narrative?: string;
-        }) => void;
-      };
+    IntaSend: new (options: {
+      publicAPIKey: string;
+      callbackURL: string;
+      live: boolean;
+    }) => {
+      on: (event: string, handler: (data: any) => void) => void;
+      run: (options: {
+        amount: number;
+        currency: string;
+        email?: string;
+        first_name?: string;
+        last_name?: string;
+        narrative?: string;
+      }) => void;
     };
   }
 }
@@ -81,19 +79,19 @@ export default function DonatePage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    if (window.IntaSend?.Inline) {
+    if (window.IntaSend) {
       setSdkLoaded(true);
       return;
     }
 
     const script = document.createElement('script');
-    script.src = 'https://sandbox.intasend.net/intsnd-collect/v1.0/intsnd-collect.js';
+    script.src = 'https://unpkg.com/@intasend/intasend-inline.js-sdk@latest/build/intasend-inline.js';
     script.async = true;
     script.onload = () => setSdkLoaded(true);
     script.onerror = () => {
-      // Fallback to production CDN
+      // Fallback to older CDN
       const fallbackScript = document.createElement('script');
-      fallbackScript.src = 'https://collection.intasend.com/intsnd-collect/v1.0/intsnd-collect.js';
+      fallbackScript.src = 'https://cdn.jsdelivr.net/npm/@intasend/intasend-inline-js-sdk@latest/build/intasend-inline.js';
       fallbackScript.async = true;
       fallbackScript.onload = () => setSdkLoaded(true);
       document.head.appendChild(fallbackScript);
@@ -103,11 +101,11 @@ export default function DonatePage() {
 
   // Initialize IntaSend when SDK is loaded
   useEffect(() => {
-    if (!sdkLoaded || typeof window === 'undefined' || !window.IntaSend?.Inline) return;
+    if (!sdkLoaded || typeof window === 'undefined' || !window.IntaSend) return;
 
     const isLive = process.env.NEXT_PUBLIC_INTASEND_ENV === 'live';
 
-    intaSendRef.current = new window.IntaSend.Inline({
+    intaSendRef.current = new window.IntaSend({
       publicAPIKey: INTASEND_PUBLISHABLE_KEY,
       callbackURL: `${window.location.origin}/donate`,
       live: isLive,
@@ -168,7 +166,7 @@ export default function DonatePage() {
 
     const nameParts = donorName.trim().split(' ');
 
-    intaSendRef.current.collect({
+    intaSendRef.current.run({
       amount: numericAmount,
       currency: 'KES',
       email: donorEmail.trim() || undefined,
