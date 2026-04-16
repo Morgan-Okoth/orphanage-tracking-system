@@ -87,11 +87,10 @@ function makeContext(envOverrides: Record<string, any> = {}) {
   return {
     env: {
       DB: {} as D1Database,
-      MPESA_CONSUMER_KEY: 'test-consumer-key',
-      MPESA_CONSUMER_SECRET: 'test-consumer-secret',
-      MPESA_SHORTCODE: '174379',
-      MPESA_PASSKEY: 'test-passkey',
-      MPESA_CALLBACK_URL: 'https://example.com/callback',
+      INTASEND_SECRET_KEY: 'test-intasend-secret-key',
+      INTASEND_CALLBACK_URL: 'https://example.com/callback',
+      INTASEND_WEBHOOK_CHALLENGE: 'test-challenge',
+      INTASEND_DEVICE_ID: 'test-device-id',
       ...envOverrides,
     },
     req: {
@@ -100,51 +99,63 @@ function makeContext(envOverrides: Record<string, any> = {}) {
   } as any;
 }
 
-/** Build a mock M-Pesa STK Push success response */
-function makeMpesaSTKResponse(overrides: Partial<any> = {}) {
+/** Build a mock IntaSend initiate payout response */
+function makeIntaSendResponse(overrides: Partial<any> = {}) {
   return {
-    MerchantRequestID: 'MR-123456',
-    CheckoutRequestID: 'ws_CO_123456',
-    ResponseCode: '0',
-    ResponseDescription: 'Success. Request accepted for processing',
-    CustomerMessage: 'Success. Request accepted for processing',
+    tracking_id: 'INT-TRACK-123456',
+    status: 'PENDING',
+    status_code: 'TS000',
+    transactions: [
+      {
+        transaction_id: 'TXN-123456',
+        request_reference_id: 'req-1',
+        account: '+254712345678',
+        amount: 5000,
+        status: 'PENDING',
+        status_code: 'TS000',
+      },
+    ],
     ...overrides,
   };
 }
 
-/** Build a successful M-Pesa callback payload */
-function makeSuccessCallback(checkoutRequestId = 'ws_CO_123456') {
+/** Build a successful IntaSend webhook callback */
+function makeSuccessCallback(trackingId = 'ws_CO_123456') {
   return {
-    Body: {
-      stkCallback: {
-        MerchantRequestID: 'MR-123456',
-        CheckoutRequestID: checkoutRequestId,
-        ResultCode: 0,
-        ResultDesc: 'The service request is processed successfully.',
-        CallbackMetadata: {
-          Item: [
-            { Name: 'Amount', Value: 5000 },
-            { Name: 'MpesaReceiptNumber', Value: 'NLJ7RT61SV' },
-            { Name: 'TransactionDate', Value: 20231201120000 },
-            { Name: 'PhoneNumber', Value: 254712345678 },
-          ],
-        },
+    tracking_id: trackingId,
+    status: 'SUCCESSFUL',
+    status_code: 'TS100',
+    transactions: [
+      {
+        transaction_id: 'TXN-123456',
+        request_reference_id: 'req-1',
+        provider_reference: 'NLJ7RT61SV',
+        account: '+254712345678',
+        amount: 5000,
+        status: 'SUCCESSFUL',
+        status_code: 'TS100',
       },
-    },
+    ],
   };
 }
 
-/** Build a failed M-Pesa callback payload */
-function makeFailureCallback(checkoutRequestId = 'ws_CO_123456') {
+/** Build a failed IntaSend webhook callback */
+function makeFailureCallback(trackingId = 'ws_CO_123456') {
   return {
-    Body: {
-      stkCallback: {
-        MerchantRequestID: 'MR-123456',
-        CheckoutRequestID: checkoutRequestId,
-        ResultCode: 1032,
-        ResultDesc: 'Request cancelled by user',
+    tracking_id: trackingId,
+    status: 'FAILED',
+    status_code: 'TS200',
+    transactions: [
+      {
+        transaction_id: 'TXN-123456',
+        request_reference_id: 'req-1',
+        account: '+254712345678',
+        amount: 5000,
+        status: 'FAILED',
+        status_code: 'TS200',
+        status_description: 'Request cancelled by user',
       },
-    },
+    ],
   };
 }
 
@@ -213,18 +224,13 @@ function setupUpdateOk() {
   });
 }
 
-/** Mock global fetch for M-Pesa API calls */
-function mockMpesaFetch(tokenResponse: any, stkResponse: any) {
-  let callCount = 0;
-  vi.stubGlobal('fetch', vi.fn(async () => {
-    callCount++;
-    const data = callCount === 1 ? tokenResponse : stkResponse;
-    return {
-      ok: true,
-      json: async () => data,
-      text: async () => JSON.stringify(data),
-    };
-  }));
+/** Mock global fetch for IntaSend API calls */
+function mockIntaSendFetch(response: any) {
+  vi.stubGlobal('fetch', vi.fn(async () => ({
+    ok: true,
+    json: async () => response,
+    text: async () => JSON.stringify(response),
+  })));
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -251,17 +257,14 @@ describe('PaymentService', () => {
       setupSelectSequence([request, null, student]);
       setupInsertOk();
 
-      mockMpesaFetch(
-        { access_token: 'test-token' },
-        makeMpesaSTKResponse()
-      );
+      mockIntaSendFetch(makeIntaSendResponse());
 
       const result = await service.initiatePayment('req-1', '+254712345678', 'admin-1', ctx);
 
       expect(result).toBeDefined();
       expect(result.status).toBe('pending');
       expect(result.amount).toBe(5000);
-      expect(result.mpesaCheckoutRequestId).toBe('ws_CO_123456');
+      expect(result.intasendTrackingId).toBe('INT-TRACK-123456');
       expect(mockDb.insert).toHaveBeenCalled();
     });
 
@@ -279,10 +282,7 @@ describe('PaymentService', () => {
         }),
       });
 
-      mockMpesaFetch(
-        { access_token: 'test-token' },
-        makeMpesaSTKResponse()
-      );
+      mockIntaSendFetch(makeIntaSendResponse());
 
       await service.initiatePayment('req-1', '+254712345678', 'admin-1', ctx);
 
@@ -292,30 +292,25 @@ describe('PaymentService', () => {
       expect(capturedValues.amount).toBe(5000);
     });
 
-    it('should call M-Pesa STK Push API during payment initiation', async () => {
+    it('should call IntaSend API during payment initiation', async () => {
       const request = makeRequest({ status: RequestStatus.VERIFIED });
       const student = makeStudent();
 
       setupSelectSequence([request, null, student]);
       setupInsertOk();
 
-      const fetchMock = vi.fn();
-      let callCount = 0;
-      fetchMock.mockImplementation(async (url: string) => {
-        callCount++;
-        if (callCount === 1) {
-          return { ok: true, json: async () => ({ access_token: 'test-token' }) };
-        }
-        return { ok: true, json: async () => makeMpesaSTKResponse() };
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => makeIntaSendResponse(),
       });
       vi.stubGlobal('fetch', fetchMock);
 
       await service.initiatePayment('req-1', '+254712345678', 'admin-1', ctx);
 
-      // fetch called twice: once for OAuth token, once for STK push
-      expect(fetchMock).toHaveBeenCalledTimes(2);
-      const stkCallUrl = fetchMock.mock.calls[1][0] as string;
-      expect(stkCallUrl).toContain('stkpush');
+      // fetch called for IntaSend API
+      expect(fetchMock).toHaveBeenCalled();
+      const callUrl = fetchMock.mock.calls[0][0] as string;
+      expect(callUrl).toContain('intasend.com');
     });
   });
 
@@ -490,7 +485,7 @@ describe('PaymentService', () => {
       expect(result.amount).toBe(5000);
       expect(result.currency).toBe('KES');
       expect(result.status).toBe('completed');
-      expect(result.mpesaReceiptNumber).toBe('NLJ7RT61SV');
+      expect(result.providerReference).toBe('NLJ7RT61SV');
     });
 
     it('should throw TRANSACTION_NOT_FOUND for a non-existent transaction ID', async () => {
@@ -509,7 +504,7 @@ describe('PaymentService', () => {
       expect(result).toHaveProperty('requestId');
       expect(result).toHaveProperty('amount');
       expect(result).toHaveProperty('currency');
-      expect(result).toHaveProperty('mpesaTransactionId');
+      expect(result).toHaveProperty('intasendTrackingId');
       expect(result).toHaveProperty('phoneNumber');
       expect(result).toHaveProperty('status');
       expect(result).toHaveProperty('initiatedAt');
