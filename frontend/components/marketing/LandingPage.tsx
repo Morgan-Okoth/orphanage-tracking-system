@@ -111,18 +111,6 @@ export default function LandingPage() {
                 <Button component={Link} href="/login" sx={{ color: 'common.white' }}>
                   Sign in
                 </Button>
-                <Button
-                  component={Link}
-                  href="/register"
-                  variant="outlined"
-                  sx={{
-                    color: 'common.white',
-                    borderColor: 'rgba(255,255,255,0.72)',
-                    '&:hover': { borderColor: 'common.white', bgcolor: 'rgba(255,255,255,0.12)' },
-                  }}
-                >
-                  Beneficiary Register
-                </Button>
               </Stack>
             </Toolbar>
           </AppBar>
