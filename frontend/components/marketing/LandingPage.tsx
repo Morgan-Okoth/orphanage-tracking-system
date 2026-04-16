@@ -84,19 +84,28 @@ function HeroSection() {
       <Box
         sx={{
           display: { xs: 'none', md: 'block' },
-          width: '40%',
+          width: '50%',
           position: 'relative',
           overflow: 'hidden',
-          borderRadius: 2,
         }}
       >
-        <Image
-          src="/logo.png"
-          alt="Bethel Rays of Hope Logo"
-          fill
-          style={{ objectFit: 'cover' }}
-          priority
-        />
+        <Box
+          sx={{
+            position: 'relative',
+            width: '100%',
+            minHeight: '500px',
+            clipPath: 'circle(70% at 25% 50%)',
+            bgcolor: 'transparent',
+          }}
+        >
+          <Image
+            src="/logo.png"
+            alt="Bethel Rays of Hope Logo"
+            fill
+            style={{ objectFit: 'cover' }}
+            priority
+          />
+        </Box>
       </Box>
     </Box>
   );
@@ -109,12 +118,13 @@ export default function LandingPage() {
         sx={{
           background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 60%, #42a5f5 100%)',
           color: 'common.white',
-          px: 2,
+          px: 0,
           pt: 1,
           pb: { xs: 3, md: 4 },
+          overflow: 'hidden',
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="lg" sx={{ pl: { md: 3 } }}>
           <AppBar position="static" color="transparent" elevation={0}>
             <Toolbar disableGutters sx={{ py: 0.5 }}>
               <Stack direction="row" spacing={1.5} alignItems="center" flexGrow={1}>
