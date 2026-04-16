@@ -144,14 +144,14 @@ export default function AdminRequestDetailPage({ params }: Props) {
                     Payment Completed
                   </Typography>
                   <Stack spacing={0.5}>
-                    {payment.mpesaTransactionId && (
+                    {payment.intasendTrackingId && (
                       <Typography variant="body2">
-                        <strong>Transaction ID:</strong> {payment.mpesaTransactionId}
+                        <strong>Transaction ID:</strong> {payment.intasendTrackingId}
                       </Typography>
                     )}
-                    {payment.mpesaReceiptNumber && (
+                    {payment.providerReference && (
                       <Typography variant="body2">
-                        <strong>Receipt:</strong> {payment.mpesaReceiptNumber}
+                        <strong>Receipt:</strong> {payment.providerReference}
                       </Typography>
                     )}
                     <Typography variant="body2">

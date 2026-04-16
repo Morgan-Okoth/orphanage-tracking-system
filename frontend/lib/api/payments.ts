@@ -19,9 +19,11 @@ export interface PaymentRecord {
   id: string;
   requestId: string;
   amount: number;
+  currency?: string;
   status: 'pending' | 'completed' | 'failed';
   intasendTrackingId?: string;
   providerReference?: string;
+  phoneNumber?: string;
   initiatedAt: string;
   completedAt?: string;
   failureReason?: string;

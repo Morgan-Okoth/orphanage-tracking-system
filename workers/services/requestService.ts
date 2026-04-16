@@ -674,17 +674,37 @@ export class RequestService {
       c
     );
 
-    // Get created comment
+    // Get created comment with author details
     const comment = await this.db
-      .select()
+      .select({
+        id: comments.id,
+        requestId: comments.requestId,
+        authorId: comments.authorId,
+        content: comments.content,
+        createdAt: comments.createdAt,
+        isInternal: comments.isInternal,
+        authorName: users.firstName,
+        authorRole: users.role,
+      })
       .from(comments)
+      .innerJoin(users, eq(comments.authorId, users.id))
       .where(eq(comments.id, commentId))
+      .get();
+
+    // Get full author name
+    const author = await this.db
+      .select({ firstName: users.firstName, lastName: users.lastName })
+      .from(users)
+      .where(eq(users.id, authorId))
       .get();
 
     // Send notification to relevant parties
     await this.notifyCommentAdded(c.env.DB, requestId, authorId, isInternal);
 
-    return comment;
+    return {
+      ...comment,
+      authorName: author ? `${author.firstName} ${author.lastName}` : comment?.authorName,
+    };
   }
 
   /**
@@ -697,24 +717,62 @@ export class RequestService {
     // Verify request exists
     await this.getRequestById(requestId);
 
-    // Students cannot see internal comments
+    // Build query with join to get author details
     let query = this.db
-      .select()
+      .select({
+        id: comments.id,
+        requestId: comments.requestId,
+        authorId: comments.authorId,
+        authorName: users.firstName,
+        authorRole: users.role,
+        content: comments.content,
+        createdAt: comments.createdAt,
+        isInternal: comments.isInternal,
+      })
       .from(comments)
+      .innerJoin(users, eq(comments.authorId, users.id))
       .where(eq(comments.requestId, requestId));
 
     if (userRole === UserRole.STUDENT) {
-      query = query.where(
-        and(
-          eq(comments.requestId, requestId),
-          eq(comments.isInternal, false)
-        )
-      ) as any;
+      query = this.db
+        .select({
+          id: comments.id,
+          requestId: comments.requestId,
+          authorId: comments.authorId,
+          authorName: users.firstName,
+          authorRole: users.role,
+          content: comments.content,
+          createdAt: comments.createdAt,
+          isInternal: comments.isInternal,
+        })
+        .from(comments)
+        .innerJoin(users, eq(comments.authorId, users.id))
+        .where(
+          and(
+            eq(comments.requestId, requestId),
+            eq(comments.isInternal, false)
+          )
+        ) as any;
     }
 
     const commentsList = await query.orderBy(asc(comments.createdAt)).all();
 
-    return commentsList;
+    // Combine first name with last name for authorName
+    const commentsWithFullNames = await Promise.all(
+      commentsList.map(async (comment) => {
+        const author = await this.db
+          .select({ firstName: users.firstName, lastName: users.lastName })
+          .from(users)
+          .where(eq(users.id, comment.authorId))
+          .get();
+        return {
+          ...comment,
+          authorName: author ? `${author.firstName} ${author.lastName}` : comment.authorName,
+        };
+      })
+    );
+
+    return commentsWithFullNames;
   }
 
   /**
@@ -725,13 +783,38 @@ export class RequestService {
     await this.getRequestById(requestId);
 
     const history = await this.db
-      .select()
+      .select({
+        id: statusChanges.id,
+        requestId: statusChanges.requestId,
+        fromStatus: statusChanges.fromStatus,
+        toStatus: statusChanges.toStatus,
+        changedById: statusChanges.changedById,
+        changedAt: statusChanges.changedAt,
+        reason: statusChanges.reason,
+        changedByName: users.firstName,
+      })
       .from(statusChanges)
+      .innerJoin(users, eq(statusChanges.changedById, users.id))
       .where(eq(statusChanges.requestId, requestId))
       .orderBy(asc(statusChanges.changedAt))
       .all();
 
-    return history;
+    // Combine first name with last name for changedByName
+    const historyWithFullNames = await Promise.all(
+      history.map(async (entry) => {
+        const changer = await this.db
+          .select({ firstName: users.firstName, lastName: users.lastName })
+          .from(users)
+          .where(eq(users.id, entry.changedById))
+          .get();
+        return {
+          ...entry,
+          changedByName: changer ? `${changer.firstName} ${changer.lastName}` : entry.changedByName,
+        };
+      })
+    );
+
+    return historyWithFullNames;
   }
 
   /**
