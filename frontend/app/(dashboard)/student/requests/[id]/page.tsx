@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import {
   Box,
   Paper,
@@ -14,12 +14,15 @@ import {
   ListItemText,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import WarningIcon from '@mui/icons-material/Warning';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { requestsApi } from '../../../../../lib/api/requests';
 import { documentsApi } from '../../../../../lib/api/documents';
+import { RequestStatus } from '../../../../../lib/types/request';
 import RequestStatusBadge from '../../../../../components/requests/RequestStatusBadge';
+import DisputeForm from '../../../../../components/requests/DisputeForm';
 import LoadingSpinner from '../../../../../components/common/LoadingSpinner';
 
 const typeLabels: Record<string, string> = {
@@ -37,9 +40,10 @@ interface Props {
 export default function RequestDetailPage({ params }: Props) {
   const { id } = use(params);
   const router = useRouter();
+  const [disputeOpen, setDisputeOpen] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['request', id],
+    queryKey: ['student-request', id],
     queryFn: () => requestsApi.getById(id),
   });
 
@@ -100,6 +104,16 @@ export default function RequestDetailPage({ params }: Props) {
             <strong>Flag reason:</strong> {req.flagReason}
           </Alert>
         )}
+        {req.disputeReason && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            <strong>Dispute reason:</strong> {req.disputeReason}
+            {req.disputeResolution && (
+              <Box sx={{ mt: 1 }}>
+                <strong>Resolution:</strong> {req.disputeResolution}
+              </Box>
+            )}
+          </Alert>
+        )}
 
         <Typography variant="subtitle2" gutterBottom>Timeline</Typography>
         <List dense disablePadding sx={{ mb: 3 }}>
@@ -129,7 +143,35 @@ export default function RequestDetailPage({ params }: Props) {
             </List>
           </>
         )}
+
+        {/* Dispute Button - Only show for PAID requests */}
+        {req.status === RequestStatus.PAID && (
+          <>
+            <Divider sx={{ my: 2 }} />
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                If you have not received the payment, you can raise a dispute. 
+                This will be reviewed by administrators.
+              </Typography>
+            </Alert>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<WarningIcon />}
+              onClick={() => setDisputeOpen(true)}
+              fullWidth
+            >
+              Raise Payment Dispute
+            </Button>
+          </>
+        )}
       </Paper>
+
+      <DisputeForm
+        requestId={id}
+        open={disputeOpen}
+        onClose={() => setDisputeOpen(false)}
+      />
     </Box>
   );
 }

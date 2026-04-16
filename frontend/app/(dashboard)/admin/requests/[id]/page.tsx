@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PaymentsIcon from '@mui/icons-material/Payments';
+import GavelIcon from '@mui/icons-material/Gavel';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -28,6 +29,7 @@ import DocumentViewer from '../../../../../components/documents/DocumentViewer';
 import RequestTimeline from '../../../../../components/requests/RequestTimeline';
 import LoadingSpinner from '../../../../../components/common/LoadingSpinner';
 import PaymentInitiationModal from '../../../../../components/admin/PaymentInitiationModal';
+import DisputeResolution from '../../../../../components/admin/DisputeResolution';
 
 const typeLabels: Record<string, string> = {
   SCHOOL_FEES: 'School Fees',
@@ -46,6 +48,7 @@ export default function AdminRequestDetailPage({ params }: Props) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['admin-request', id],
@@ -120,6 +123,42 @@ export default function AdminRequestDetailPage({ params }: Props) {
               <Alert severity="warning" sx={{ mb: 2 }}>
                 <strong>Flag reason:</strong> {req.flagReason}
               </Alert>
+            )}
+            {req.disputeReason && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Payment Dispute Raised
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Reason:</strong> {req.disputeReason}
+                </Typography>
+                {req.disputeRaisedAt && (
+                  <Typography variant="body2">
+                    <strong>Raised:</strong> {format(new Date(req.disputeRaisedAt), 'MMM d, yyyy HH:mm')}
+                  </Typography>
+                )}
+                {req.disputeResolution && (
+                  <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="body2">
+                      <strong>Resolution:</strong> {req.disputeResolution}
+                    </Typography>
+                  </Box>
+                )}
+              </Alert>
+            )}
+
+            {/* Dispute Resolution Button */}
+            {req.status === RequestStatus.DISPUTED && (
+              <Box mt={2}>
+                <Button
+                  variant="contained"
+                  color="error"
+                  startIcon={<GavelIcon />}
+                  onClick={() => setDisputeModalOpen(true)}
+                >
+                  Resolve Dispute
+                </Button>
+              </Box>
             )}
 
             {/* Payment initiation */}
@@ -213,6 +252,17 @@ export default function AdminRequestDetailPage({ params }: Props) {
           setPaymentModalOpen(false);
           queryClient.invalidateQueries({ queryKey: ['admin-request', id] });
           queryClient.invalidateQueries({ queryKey: ['payment-by-request', id] });
+        }}
+      />
+
+      {/* Dispute Resolution Modal */}
+      <DisputeResolution
+        request={req}
+        open={disputeModalOpen}
+        onClose={() => setDisputeModalOpen(false)}
+        onSuccess={() => {
+          setDisputeModalOpen(false);
+          queryClient.invalidateQueries({ queryKey: ['admin-request', id] });
         }}
       />
     </Box>

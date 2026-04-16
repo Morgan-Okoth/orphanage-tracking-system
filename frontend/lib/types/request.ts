@@ -5,6 +5,8 @@ export enum RequestStatus {
   APPROVED = 'APPROVED',
   VERIFIED = 'VERIFIED',
   PAID = 'PAID',
+  DISPUTED = 'DISPUTED',
+  RESOLVED = 'RESOLVED',
   REJECTED = 'REJECTED',
   FLAGGED = 'FLAGGED',
   ARCHIVED = 'ARCHIVED',
@@ -32,4 +34,8 @@ export interface Request {
   paidAt?: Date;
   rejectionReason?: string;
   flagReason?: string;
+  disputeReason?: string;
+  disputeRaisedAt?: Date;
+  disputeResolvedAt?: Date;
+  disputeResolution?: string;
 }

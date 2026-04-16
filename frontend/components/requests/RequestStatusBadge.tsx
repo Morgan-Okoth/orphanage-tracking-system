@@ -11,6 +11,8 @@ const statusConfig: Record<
   [RequestStatus.APPROVED]: { label: 'Approved', color: 'success' },
   [RequestStatus.VERIFIED]: { label: 'Verified', color: 'success' },
   [RequestStatus.PAID]: { label: 'Paid', color: 'success' },
+  [RequestStatus.DISPUTED]: { label: 'Disputed', color: 'error' },
+  [RequestStatus.RESOLVED]: { label: 'Resolved', color: 'success' },
   [RequestStatus.REJECTED]: { label: 'Rejected', color: 'error' },
   [RequestStatus.FLAGGED]: { label: 'Flagged', color: 'warning' },
   [RequestStatus.ARCHIVED]: { label: 'Archived', color: 'default' },

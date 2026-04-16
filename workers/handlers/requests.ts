@@ -1135,6 +1135,199 @@ async function getComments(c: Context): Promise<Response> {
   }
 }
 
+/**
+ * POST /api/v1/requests/:id/dispute
+ * Raise a dispute for a paid request (Student only)
+ */
+async function raiseDispute(c: Context): Promise<Response> {
+  try {
+    const user = getCurrentUser(c);
+    const requestId = c.req.param('id');
+    const body = await c.req.json();
+    const { reason } = body;
+
+    if (!reason || reason.trim().length < 10) {
+      return c.json<ApiResponse>(
+        {
+          success: false,
+          error: {
+            code: 'INVALID_REASON',
+            message: 'Dispute reason must be at least 10 characters',
+          },
+        },
+        400
+      );
+    }
+
+    const requestService = new RequestService(c.env.DB);
+    const updatedRequest = await requestService.raiseDispute(
+      requestId,
+      user.userId,
+      reason.trim(),
+      c
+    );
+
+    return c.json<ApiResponse>(
+      {
+        success: true,
+        message: 'Dispute raised successfully',
+        data: updatedRequest,
+      },
+      200
+    );
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'REQUEST_NOT_FOUND') {
+        return c.json<ApiResponse>(
+          {
+            success: false,
+            error: {
+              code: 'REQUEST_NOT_FOUND',
+              message: 'Request not found',
+            },
+          },
+          404
+        );
+      }
+
+      if (error.message === 'FORBIDDEN') {
+        return c.json<ApiResponse>(
+          {
+            success: false,
+            error: {
+              code: 'FORBIDDEN',
+              message: 'You can only dispute your own requests',
+            },
+          },
+          403
+        );
+      }
+
+      if (error.message === 'INVALID_STATUS_FOR_DISPUTE') {
+        return c.json<ApiResponse>(
+          {
+            success: false,
+            error: {
+              code: 'INVALID_STATUS',
+              message: 'Can only dispute requests with PAID status',
+            },
+          },
+          400
+        );
+      }
+    }
+
+    console.error('Raise dispute error:', error);
+    return c.json<ApiResponse>(
+      {
+        success: false,
+        error: {
+          code: 'RAISE_DISPUTE_FAILED',
+          message: 'Failed to raise dispute',
+        },
+      },
+      500
+    );
+  }
+}
+
+/**
+ * POST /api/v1/requests/:id/resolve-dispute
+ * Resolve a dispute (Admin only)
+ */
+async function resolveDispute(c: Context): Promise<Response> {
+  try {
+    const user = getCurrentUser(c);
+    const requestId = c.req.param('id');
+    const body = await c.req.json();
+    const { resolution, action } = body;
+
+    if (!resolution || resolution.trim().length < 10) {
+      return c.json<ApiResponse>(
+        {
+          success: false,
+          error: {
+            code: 'INVALID_RESOLUTION',
+            message: 'Resolution must be at least 10 characters',
+          },
+        },
+        400
+      );
+    }
+
+    if (!action || !['refund', 'confirm', 'investigate'].includes(action)) {
+      return c.json<ApiResponse>(
+        {
+          success: false,
+          error: {
+            code: 'INVALID_ACTION',
+            message: 'Action must be one of: refund, confirm, investigate',
+          },
+        },
+        400
+      );
+    }
+
+    const requestService = new RequestService(c.env.DB);
+    const updatedRequest = await requestService.resolveDispute(
+      requestId,
+      user.userId,
+      resolution.trim(),
+      action as 'refund' | 'confirm' | 'investigate',
+      c
+    );
+
+    return c.json<ApiResponse>(
+      {
+        success: true,
+        message: 'Dispute resolved successfully',
+        data: updatedRequest,
+      },
+      200
+    );
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'REQUEST_NOT_FOUND') {
+        return c.json<ApiResponse>(
+          {
+            success: false,
+            error: {
+              code: 'REQUEST_NOT_FOUND',
+              message: 'Request not found',
+            },
+          },
+          404
+        );
+      }
+
+      if (error.message === 'INVALID_STATUS_FOR_RESOLUTION') {
+        return c.json<ApiResponse>(
+          {
+            success: false,
+            error: {
+              code: 'INVALID_STATUS',
+              message: 'Can only resolve requests with DISPUTED status',
+            },
+          },
+          400
+        );
+      }
+    }
+
+    console.error('Resolve dispute error:', error);
+    return c.json<ApiResponse>(
+      {
+        success: false,
+        error: {
+          code: 'RESOLVE_DISPUTE_FAILED',
+          message: 'Failed to resolve dispute',
+        },
+      },
+      500
+    );
+  }
+}
+
 // Export all handlers
 export const requestHandlers = {
   createRequest,
@@ -1151,4 +1344,6 @@ export const requestHandlers = {
   requestAdditionalDocuments,
   addComment,
   getComments,
+  raiseDispute,
+  resolveDispute,
 };

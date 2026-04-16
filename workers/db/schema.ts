@@ -36,7 +36,7 @@ export const requests = sqliteTable('requests', {
   reason: text('reason').notNull(),
   status: text('status', {
     enum: ['SUBMITTED', 'UNDER_REVIEW', 'PENDING_DOCUMENTS', 'APPROVED', 
-           'VERIFIED', 'PAID', 'REJECTED', 'FLAGGED', 'ARCHIVED']
+           'VERIFIED', 'PAID', 'DISPUTED', 'RESOLVED', 'REJECTED', 'FLAGGED', 'ARCHIVED']
   }).default('SUBMITTED').notNull(),
   submittedAt: integer('submitted_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
   reviewedAt: integer('reviewed_at', { mode: 'timestamp' }),
@@ -45,6 +45,10 @@ export const requests = sqliteTable('requests', {
   archivedAt: integer('archived_at', { mode: 'timestamp' }),
   rejectionReason: text('rejection_reason'),
   flagReason: text('flag_reason'),
+  disputeReason: text('dispute_reason'),
+  disputeRaisedAt: integer('dispute_raised_at', { mode: 'timestamp' }),
+  disputeResolvedAt: integer('dispute_resolved_at', { mode: 'timestamp' }),
+  disputeResolution: text('dispute_resolution'),
 }, (table) => ({
   studentIdIdx: index('requests_student_id_idx').on(table.studentId),
   statusIdx: index('requests_status_idx').on(table.status),
@@ -124,7 +128,8 @@ export const auditLogs = sqliteTable('audit_logs', {
            'USER_APPROVED', 'USER_REJECTED', 'USER_DEACTIVATED', 'USER_REACTIVATED',
            'USER_UPDATED', 'REQUEST_CREATED', 'REQUEST_STATUS_CHANGED', 
            'DOCUMENT_UPLOADED', 'DOCUMENT_ACCESSED', 'PAYMENT_INITIATED', 
-           'PAYMENT_COMPLETED', 'PAYMENT_FAILED', 'COMMENT_ADDED', 'REPORT_GENERATED']
+           'PAYMENT_COMPLETED', 'PAYMENT_FAILED', 'DISPUTE_RAISED', 'DISPUTE_RESOLVED',
+           'COMMENT_ADDED', 'REPORT_GENERATED']
   }).notNull(),
   resourceType: text('resource_type').notNull(),
   resourceId: text('resource_id'),

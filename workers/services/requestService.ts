@@ -963,4 +963,199 @@ export class RequestService {
       }
     }
   }
+
+  /**
+   * Raise a dispute for a paid request
+   * Student claims they did not receive the funds
+   */
+  async raiseDispute(
+    requestId: string,
+    studentId: string,
+    reason: string,
+    c: Context
+  ): Promise<any> {
+    const request = await this.getRequestById(requestId);
+
+    // Only students can raise disputes on their own requests
+    if (request.studentId !== studentId) {
+      throw new Error('FORBIDDEN');
+    }
+
+    // Can only dispute PAID requests
+    if (request.status !== RequestStatus.PAID) {
+      throw new Error('INVALID_STATUS_FOR_DISPUTE');
+    }
+
+    // Update request status to DISPUTED
+    await this.db
+      .update(requests)
+      .set({
+        status: RequestStatus.DISPUTED,
+        disputeReason: reason,
+        disputeRaisedAt: new Date(),
+      })
+      .where(eq(requests.id, requestId));
+
+    // Log status change
+    await this.logStatusChange({
+      requestId,
+      fromStatus: RequestStatus.PAID,
+      toStatus: RequestStatus.DISPUTED,
+      changedById: studentId,
+      reason: `Dispute raised: ${reason}`,
+    });
+
+    // Audit log
+    await auditLog(
+      studentId,
+      AuditAction.DISPUTE_RAISED,
+      'Request',
+      requestId,
+      { reason },
+      c
+    );
+
+    // Notify admins about the dispute
+    await this.notifyAdminsOfDispute(c.env.DB, requestId, reason);
+
+    // Return updated request
+    return await this.getRequestById(requestId);
+  }
+
+  /**
+   * Resolve a dispute (Admin only)
+   */
+  async resolveDispute(
+    requestId: string,
+    adminId: string,
+    resolution: string,
+    action: 'refund' | 'confirm' | 'investigate',
+    c: Context
+  ): Promise<any> {
+    const request = await this.getRequestById(requestId);
+
+    // Can only resolve DISPUTED requests
+    if (request.status !== RequestStatus.DISPUTED) {
+      throw new Error('INVALID_STATUS_FOR_RESOLUTION');
+    }
+
+    let newStatus: RequestStatus;
+    let resolutionText: string;
+
+    switch (action) {
+      case 'refund':
+        newStatus = RequestStatus.RESOLVED;
+        resolutionText = `Refund issued: ${resolution}`;
+        break;
+      case 'confirm':
+        newStatus = RequestStatus.PAID;
+        resolutionText = `Payment confirmed: ${resolution}`;
+        break;
+      case 'investigate':
+        newStatus = RequestStatus.FLAGGED;
+        resolutionText = `Under investigation: ${resolution}`;
+        break;
+      default:
+        throw new Error('INVALID_RESOLUTION_ACTION');
+    }
+
+    // Update request
+    await this.db
+      .update(requests)
+      .set({
+        status: newStatus,
+        disputeResolution: resolutionText,
+        disputeResolvedAt: new Date(),
+        flagReason: action === 'investigate' ? resolution : request.flagReason,
+      })
+      .where(eq(requests.id, requestId));
+
+    // Log status change
+    await this.logStatusChange({
+      requestId,
+      fromStatus: RequestStatus.DISPUTED,
+      toStatus: newStatus,
+      changedById: adminId,
+      reason: resolutionText,
+    });
+
+    // Audit log
+    await auditLog(
+      adminId,
+      AuditAction.DISPUTE_RESOLVED,
+      'Request',
+      requestId,
+      { action, resolution },
+      c
+    );
+
+    // Notify student
+    await this.notifyDisputeResolution(c.env.DB, requestId, resolutionText);
+
+    return await this.getRequestById(requestId);
+  }
+
+  /**
+   * Notify admins when a dispute is raised
+   */
+  private async notifyAdminsOfDispute(
+    db: D1Database,
+    requestId: string,
+    reason: string
+  ): Promise<void> {
+    const admins = await this.db
+      .select()
+      .from(users)
+      .where(
+        or(
+          eq(users.role, UserRole.ADMIN_LEVEL_1),
+          eq(users.role, UserRole.ADMIN_LEVEL_2),
+          eq(users.role, UserRole.SUPERADMIN)
+        )
+      )
+      .all();
+
+    for (const admin of admins) {
+      await this.notificationService.queueEmail(
+        db,
+        admin.id,
+        'Payment Dispute Raised',
+        `A payment dispute has been raised for request ${requestId}. Reason: ${reason}`,
+        `<p><strong>URGENT:</strong> A payment dispute has been raised.</p><p>Request ID: ${requestId}</p><p>Reason: ${reason}</p><p>Please review and resolve immediately.</p>`
+      );
+    }
+  }
+
+  /**
+   * Notify student when dispute is resolved
+   */
+  private async notifyDisputeResolution(
+    db: D1Database,
+    requestId: string,
+    resolution: string
+  ): Promise<void> {
+    const request = await this.db
+      .select()
+      .from(requests)
+      .where(eq(requests.id, requestId))
+      .get();
+
+    if (!request) return;
+
+    const student = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.id, request.studentId))
+      .get();
+
+    if (!student) return;
+
+    await this.notificationService.queueEmail(
+      db,
+      student.id,
+      'Payment Dispute Resolved',
+      `Your payment dispute for request ${requestId} has been resolved. ${resolution}`,
+      `<p>Your payment dispute has been resolved.</p><p>Request ID: ${requestId}</p><p>Resolution: ${resolution}</p>`
+    );
+  }
 }

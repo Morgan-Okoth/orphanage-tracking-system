@@ -53,4 +53,10 @@ export const requestsApi = {
 
   cancel: (id: string) =>
     apiClient.delete<ApiResponse<Request>>(`/requests/${id}`),
+
+  raiseDispute: (id: string, reason: string) =>
+    apiClient.post<ApiResponse<Request>>(`/requests/${id}/dispute`, { reason }),
+
+  resolveDispute: (id: string, resolution: string, action: 'refund' | 'confirm' | 'investigate') =>
+    apiClient.post<ApiResponse<Request>>(`/requests/${id}/resolve-dispute`, { resolution, action }),
 };

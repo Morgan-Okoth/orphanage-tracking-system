@@ -235,6 +235,21 @@ router.get(
   requestHandlers.getComments
 );
 
+// Dispute routes
+router.post(
+  '/api/v1/requests/:id/dispute',
+  authMiddleware(),
+  requireRole(UserRole.STUDENT),
+  requestHandlers.raiseDispute
+);
+
+router.post(
+  '/api/v1/requests/:id/resolve-dispute',
+  authMiddleware(),
+  requireRole(UserRole.ADMIN_LEVEL_1, UserRole.ADMIN_LEVEL_2, UserRole.SUPERADMIN),
+  requestHandlers.resolveDispute
+);
+
 // Payment routes
 router.post(
   '/api/v1/payments/initiate',
