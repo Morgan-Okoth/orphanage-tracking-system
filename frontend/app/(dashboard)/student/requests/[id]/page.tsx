@@ -83,7 +83,7 @@ export default function RequestDetailPage({ params }: Props) {
               {typeLabels[req.type] ?? req.type}
             </Typography>
             <Typography variant="h6" color="primary" mt={0.5}>
-              ${req.amount.toLocaleString()}
+              KES {req.amount.toLocaleString()}
             </Typography>
           </Box>
           <RequestStatusBadge status={req.status} size="medium" />

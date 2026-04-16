@@ -34,7 +34,7 @@ export default function RequestCard({ request, onClick }: Props) {
             </Box>
             <Box textAlign="right" ml={2}>
               <Typography variant="h6" color="primary">
-                ${request.amount.toLocaleString()}
+                KES {request.amount.toLocaleString()}
               </Typography>
               <RequestStatusBadge status={request.status} />
             </Box>
