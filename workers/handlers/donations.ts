@@ -98,6 +98,16 @@ app.post('/initiate', async (c: Context<{ Bindings: Env }>) => {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('IntaSend API error response:', errorText);
+
+      // Check for authentication errors
+      if (response.status === 401 || errorText.includes('authentication_failed') || errorText.includes('Session expired')) {
+        return c.json<ApiResponse>({
+          success: false,
+          error: { code: 'PAYMENT_GATEWAY_ERROR', message: 'Payment gateway is temporarily unavailable. Please try again later or contact support.' },
+        }, 503);
+      }
+
       throw new Error(`IntaSend API error: ${response.status} - ${errorText}`);
     }
 
