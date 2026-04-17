@@ -17,9 +17,9 @@ import {
   Alert,
 } from '@mui/material';
 
-const PRESET_AMOUNTS = [100, 500, 1000, 2500, 5000];
+import { API_BASE_URL } from '@/lib/utils/constants';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://financial-transparency-api.morgan-ent.workers.dev';
+const PRESET_AMOUNTS = [100, 500, 1000, 2500, 5000];
 
 const supportItems = [
   {
@@ -66,7 +66,7 @@ export default function DonatePage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/donations/initiate`, {
+      const response = await fetch(`${API_BASE_URL}/donations/initiate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
